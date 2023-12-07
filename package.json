@@ -2,7 +2,7 @@
   "name": "kops",
   "version": "0.1.0",
   "private": true,
-  "type": "module", 
+  "type": "module",
   "author": {
     "name": "cillian",
     "email": "cilliandevops@gmail.com",
