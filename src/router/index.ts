@@ -187,6 +187,31 @@ export const constantRoutes: RouteRecordRaw[] = [
       }
     ]
   },
+  {
+    path: "/monitor",
+    meta: {
+      title: "监控",
+      svgIcon: "monitor"
+    },
+    children: [
+      {
+        path: "https://docs.cillian.website",
+        component: () => {},
+        name: "Loki",
+        meta: {
+          title: "Loki"
+        }
+      },
+      {
+        path: "https://www.cillian.website",
+        component: () => {},
+        name: "ELK",
+        meta: {
+          title: "ELK"
+        }
+      }
+    ]
+  },
  
 ]
 
