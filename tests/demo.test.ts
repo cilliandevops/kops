@@ -17,9 +17,9 @@ const author1 = {
 }
 
 const author2 = {
-  name: "pany",
-  email: "939630029@qq.com",
-  url: "https://github.com/pany-ang"
+  name: "cilliandevops",
+  email: "cilliandevops@163.com",
+  url: "https://github.com/cilliandevops"
 }
 
 describe("这里填写作用域名称", () => {
