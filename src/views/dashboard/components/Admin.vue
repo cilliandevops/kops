@@ -18,15 +18,18 @@
         <el-card shadow="hover">
           <template #header>
           <div slot="header">
-            <span  style="font-weight: bolder">节点资源</span>
+            <span  >节点资源</span>
           </div>
           </template>
           <div style="float:left;padding-top:10%">
-            <el-progress  :stroke-width="20" :show-text="true" type="circle" :percentage="namespaceActive/namespaceTotal * 100"></el-progress>
+            <!-- <el-progress  :stroke-width="20" :show-text="true" type="circle" :percentage="namespaceActive/namespaceTotal * 100"></el-progress> -->
+            <el-progress  :stroke-width="20" :show-text="true" type="circle" :percentage="90/100 * 100"></el-progress>
           </div>
           <div>
             <p class="home-node-card-title">Ready/总数量</p>
-            <p class="home-node-card-num">{{namespaceActive }}/{{ namespaceTotal }}</p>
+            <p class="home-node-card-num">90/100</p>
+            <!-- 根据后端返回数据计算 -->
+            <!-- <p class="home-node-card-num">{{namespaceActive }}/{{ namespaceTotal }}</p> -->
             <!-- {{ card.content }} -->
           </div>
         </el-card>
@@ -43,7 +46,7 @@
           </div>
           <div>
             <p class="home-node-card-title">Ready/总数量</p>
-            <p class="home-node-card-num">{{ namespaceActive }}/{{ namespaceTotal }}</p>
+            <p class="home-node-card-num">1/10</p>
             <!-- {{ card.content }} -->
           </div>
         </el-card>
@@ -52,11 +55,11 @@
         <el-card>
           <template #header>
           <div slot="header">
-            <span>节点资源</span>
+            <span>应用服务</span>
           </div>
           </template>
           <div style="float:left;padding-top:10%">
-            <el-progress  :stroke-width="20" :show-text="true" type="circle" :percentage=" 80"></el-progress>
+            <el-progress  :stroke-width="20" :show-text="true" type="circle" :percentage="70"></el-progress>
           </div>
           <div>
             <p class="home-node-card-title">Ready/总数量</p>
@@ -69,11 +72,11 @@
         <el-card>
           <template #header>
           <div slot="header">
-            <span>节点资源</span>
+            <span>工作负载</span>
           </div>
           </template>
           <div style="float:left;padding-top:10%">
-            <el-progress  :stroke-width="20" :show-text="true" type="circle" :percentage=" 80"></el-progress>
+            <el-progress  :stroke-width="20" :show-text="true" type="circle" :percentage="60"></el-progress>
           </div>
           <div>
             <p class="home-node-card-title">Ready/总数量</p>
@@ -90,15 +93,15 @@
         <el-card shadow="hover">
           <template #header>
           <div slot="header">
-            <span  style="font-weight: bolder">节点资源</span>
+            <span  style="font-weight: bolder">CPU</span>
           </div>
           </template>
-          <div style="float:left;padding-top:1%">
+          <div style="float:left;padding-top:10%">
             <el-progress  :stroke-width="20" :show-text="true" type="circle" :percentage=" 80"></el-progress>
           </div>
           <div>
-            <p class="home-node-card-title">Ready/总数量</p>
-            <p class="home-node-card-num">{{ 0 }}/{{ 1 }}</p>
+            <p class="home-node-card-title">可用/G</p>
+            <!-- <p class="home-node-card-num">{{ 0 }}/{{ 1 }}</p> -->
             <!-- {{ card.content }} -->
           </div>
         </el-card>
@@ -107,15 +110,15 @@
         <el-card>
           <template #header>
           <div slot="header">
-            <span>节点资源</span>
+            <span>内存</span>
           </div>
           </template>
           <div style="float:left;padding-top:10%">
             <el-progress  :stroke-width="20" :show-text="true" type="circle" :percentage=" 80"></el-progress>
           </div>
           <div>
-            <p class="home-node-card-title">Ready/总数量</p>
-            <p class="home-node-card-num">{{ 0 }}/{{ 1 }}</p>
+            <p class="home-node-card-title">可用</p>
+            <!-- <p class="home-node-card-num">{{ 0 }}/{{ 1 }}</p> -->
             <!-- {{ card.content }} -->
           </div>
         </el-card>
@@ -124,15 +127,15 @@
         <el-card>
           <template #header>
           <div slot="header">
-            <span>节点资源</span>
+            <span>磁盘</span>
           </div>
           </template>
           <div style="float:left;padding-top:10%">
             <el-progress  :stroke-width="20" :show-text="true" type="circle" :percentage=" 80"></el-progress>
           </div>
           <div>
-            <p class="home-node-card-title">Ready/总数量</p>
-            <p class="home-node-card-num">{{ 0 }}/{{ 1 }}</p>
+            <p class="home-node-card-title">可用/总量</p>
+            <!-- <p class="home-node-card-num">{{ 0 }}/{{ 1 }}</p> -->
             <!-- {{ card.content }} -->
           </div>
         </el-card>
@@ -141,56 +144,50 @@
         <el-card>
           <template #header>
           <div slot="header">
-            <span>节点资源</span>
+            <span>流量</span>
           </div>
           </template>
-          <div style="float:left;padding-top:10%">
-            <el-progress  :stroke-width="20" :show-text="true" type="circle" :percentage=" 80"></el-progress>
+          <div style="float:left;padding-top:18%">
+            <el-progress
+              :percentage="100"
+              status="success"
+              :indeterminate="true"
+              :duration="5"
+            />
+            <el-progress
+              :percentage="100"
+              status="success"
+              :indeterminate="true"
+              :duration="3"
+            />
           </div>
           <div>
-            <p class="home-node-card-title">Ready/总数量</p>
-            <p class="home-node-card-num">{{ 0 }}/{{ 1 }}</p>
+            <p class="home-node-card-title">上行/下载</p>
+            <!-- <p class="home-node-card-num">{{ 0 }}/{{ 1 }}</p> -->
             <!-- {{ card.content }} -->
           </div>
         </el-card>
       </el-col>
     </el-row> 
   </el-collapse-item>
+  <el-collapse-item title="其他板块" name="2">
+        <div>
+          比如应用数量、访问量等等
+        </div>
+        <div>
+          Kops，key of the cilliandevops world!
+        </div>
+      </el-collapse-item>
 </el-collapse>    
 </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup >
 import { defineComponent, ref } from 'vue';
+const format = (percentage) => (percentage === 100 ? 'Full' : `${percentage}%`)
+const activeNames = ref(['1','2'])
 
-export default defineComponent({
-  name: 'ComponentName',
 
-  setup() {
-    // 用 ref 定义响应式数据
-    const namespaceActive = ref(0); // 活跃的命名空间数量
-    const namespaceTotal = ref(0); // 总命名空间数量
-    
-    // 假设有一个函数来获取这些数据，例如：
-    const fetchNamespaceData = async () => {
-      // 调用API或其他数据源来设置这些值
-      // 例如:
-      // const response = await fetch('/api/namespaces');
-      // const data = await response.json();
-      // namespaceActive.value = data.active;
-      // namespaceTotal.value = data.total;
-    };
-
-    // 在组件创建时获取数据
-    fetchNamespaceData();
-
-    // 返回组件所需的响应式数据
-    return {
-      namespaceActive,
-      namespaceTotal,
-    };
-  },
-});
 </script>
 
 
@@ -230,4 +227,8 @@ export default defineComponent({
     font-weight: bold;
     color: rgb(0, 0, 0);
 }
+ .el-progress--line {
+  margin-bottom: 15px;
+  width: 260px;
+  }
 </style>

@@ -54,9 +54,9 @@ watchEffect(() => {
     <!-- 混合模式 -->
     <LeftTopMode v-else-if="layoutMode === 'left-top'" />
     <!-- 右侧设置面板 -->
-    <RightPanel v-if="showSettings">
+    <!-- <RightPanel v-if="showSettings">
       <Settings />
-    </RightPanel>
+    </RightPanel> -->
   </div>
 </template>
 
