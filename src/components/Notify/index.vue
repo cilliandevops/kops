@@ -20,7 +20,7 @@ const badgeValue = computed(() => {
 /** 角标最大值 */
 const badgeMax = 99
 /** 面板宽度 */
-const popoverWidth = 350
+const popoverWidth = 450
 /** 当前 Tab */
 const activeName = ref<TabName>("通知")
 /** 所有数据 */
