@@ -5,12 +5,11 @@
 // Have a good day!
 module server-go
 
-go 1.21.4
+go 1.22.0
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.1
-	github.com/gorilla/websocket v1.5.1
 	github.com/wonderivan/logger v1.0.0
 	k8s.io/api v0.28.4
 	k8s.io/apimachinery v0.28.4
@@ -45,7 +44,6 @@ require (
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/moby/spdystream v0.2.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
