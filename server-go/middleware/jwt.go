@@ -3,7 +3,7 @@
 // @Email   : cilliandevops@gmail.com
 // Website  : www.cillian.website
 // Have a good day!
-package middle
+package middleware
 
 import (
 	"net/http"

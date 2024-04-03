@@ -7,9 +7,9 @@
 package config
 
 const (
-	ListenAddr     = "127.0.0.1:9090"
-	Kubeconfig     = "E:\\Cillian\\VirtualMachine\\config"
-	PodLogTailLine = 2000
-	AdminUser      = "admin"
-	AdminPwd       = "123456"
+  ListenAddr     = "127.0.0.1:9090"
+  Kubeconfig     = "D:\\Cillian\\VirtualMachine\\config"
+  PodLogTailLine = 2000
+  AdminUser      = "admin"
+  AdminPwd       = "123456"
 )

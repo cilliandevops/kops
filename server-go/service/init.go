@@ -7,7 +7,7 @@
 package service
 
 import (
-	"github.com/wonderivan/logger"
+	"github.com/cilliandevops/logger"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"server-go/config"

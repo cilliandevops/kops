@@ -8,6 +8,7 @@ module server-go
 go 1.22.0
 
 require (
+	github.com/cilliandevops/logger v0.0.0-20190109025237-11d39e135b9d
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.9.1
 	github.com/wonderivan/logger v1.0.0
