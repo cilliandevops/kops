@@ -53,7 +53,7 @@ Kops非常适合想要学习Vue、Gin进行Web开发以及对Kubernetes的进行
 
 ### 环境
 
-- Nodejs 20.10.0 (12月最新LTS版本)
+- Nodejs 20.14.0 (24年6月最新LTS版本)
 - Go 1.22.4 (24年6月最新版本)
 #### 前端：采用最新技术栈vue3+ts+elmentplus,依赖均为最新版本
 
