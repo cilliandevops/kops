@@ -20,6 +20,7 @@ type k8s struct {
 }
 
 func (k *k8s) Init() {
+
 	conf, err := clientcmd.BuildConfigFromFlags("", config.Kubeconfig)
 	if err != nil {
 		logger.Error("创建k8s配置失败, " + err.Error())
