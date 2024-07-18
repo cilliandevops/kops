@@ -1,6 +1,6 @@
 {
   "name": "kops",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "author": {
@@ -24,7 +24,8 @@
     "lint:prettier": "prettier --write \"{src,tests,types}/**/*.{vue,js,jsx,ts,tsx,json,css,less,scss,html,md}\"",
     "lint": "pnpm lint:eslint && pnpm lint:prettier",
     "prepare": "husky install",
-    "test": "vitest"
+    "test": "vitest",
+    "release": "standard-version"
   },
   "dependencies": {
     "@element-plus/icons-vue": "2.1.0",
@@ -42,6 +43,7 @@
     "path-to-regexp": "6.2.1",
     "pinia": "2.1.7",
     "screenfull": "6.0.2",
+    "standard-version": "^9.5.0",
     "vue": "3.3.8",
     "vue-router": "4.2.5",
     "vxe-table": "4.5.13",
