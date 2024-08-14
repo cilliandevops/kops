@@ -1,0 +1,103 @@
+{
+  "name": "kops",
+  "version": "0.1.0",
+  "description": "一个免费开源的中后台管理系统基础解决方案，基于 Vue3、TypeScript、Element Plus、Pinia 和 Vite 等主流技术",
+  "author": {
+    "name": "cillian",
+    "email": "cilliandevops@gmail.com",
+    "url": "https://github.com/cilliandevops"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cilliandevops/kops.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build:stage": "vue-tsc --noEmit && vite build --mode staging",
+    "build:prod": "vue-tsc --noEmit && vite build",
+    "preview:stage": "pnpm build:stage && vite preview",
+    "preview:prod": "pnpm build:prod && vite preview",
+    "lint:eslint": "eslint --cache --max-warnings 0 \"{src,tests,types}/**/*.{vue,js,jsx,ts,tsx}\" --fix",
+    "lint:prettier": "prettier --write \"{src,tests,types}/**/*.{vue,js,jsx,ts,tsx,json,css,less,scss,html,md}\"",
+    "lint": "pnpm lint:eslint && pnpm lint:prettier",
+    "prepare": "husky",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "2.3.1",
+    "axios": "1.7.3",
+    "dayjs": "1.11.12",
+    "element-plus": "2.8.0",
+    "js-cookie": "3.0.5",
+    "lodash-es": "4.17.21",
+    "mitt": "3.0.1",
+    "normalize.css": "8.0.1",
+    "nprogress": "0.2.0",
+    "path-browserify": "1.0.1",
+    "path-to-regexp": "7.1.0",
+    "pinia": "2.2.1",
+    "screenfull": "6.0.2",
+    "vue": "3.4.37",
+    "vue-router": "4.4.3",
+    "vxe-table": "4.6.18",
+    "vxe-table-plugin-element": "4.0.4",
+    "xe-utils": "3.5.30"
+  },
+  "devDependencies": {
+    "@types/js-cookie": "3.0.6",
+    "@types/lodash-es": "4.17.12",
+    "@types/node": "22.2.0",
+    "@types/nprogress": "0.2.3",
+    "@types/path-browserify": "1.0.2",
+    "@typescript-eslint/eslint-plugin": "8.0.1",
+    "@typescript-eslint/parser": "8.0.1",
+    "@vitejs/plugin-vue": "5.1.2",
+    "@vitejs/plugin-vue-jsx": "4.0.0",
+    "@vue/eslint-config-prettier": "9.0.0",
+    "@vue/eslint-config-typescript": "13.0.0",
+    "@vue/test-utils": "2.4.6",
+    "eslint": "8.57.0",
+    "eslint-plugin-prettier": "5.2.1",
+    "eslint-plugin-vue": "9.27.0",
+    "husky": "9.1.4",
+    "jsdom": "24.1.1",
+    "lint-staged": "15.2.8",
+    "prettier": "3.3.3",
+    "sass": "1.77.8",
+    "typescript": "5.5.4",
+    "unocss": "0.61.9",
+    "vite": "5.4.0",
+    "vite-plugin-svg-icons": "2.0.1",
+    "vite-svg-loader": "5.1.0",
+    "vitest": "2.0.5",
+    "vue-eslint-parser": "9.4.3",
+    "vue-tsc": "2.0.29"
+  },
+  "lint-staged": {
+    "*.{vue,js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{css,less,scss,html,md}": [
+      "prettier --write"
+    ],
+    "package.json": [
+      "prettier --write"
+    ]
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "admin",
+    "vue-admin",
+    "vue3-admin",
+    "vite",
+    "vite-admin",
+    "element-plus",
+    "element-plus-admin",
+    "ts",
+    "typescript"
+  ],
+  "license": "MIT"
+}
