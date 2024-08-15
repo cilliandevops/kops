@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "2.3.1",
+    "auto-changelog": "^2.4.0",
     "axios": "1.7.3",
     "dayjs": "1.11.12",
     "element-plus": "2.8.0",
