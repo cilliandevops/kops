@@ -162,7 +162,7 @@
       </el-collapse-item>
       <el-collapse-item title="其他板块" name="2">
         <div>比如应用数量、访问量等等</div>
-        <div>Kops，key of the cilliandevops world!</div>
+        <div>Kops,key of the cilliandevops world!</div>
       </el-collapse-item>
     </el-collapse>
   </div>
