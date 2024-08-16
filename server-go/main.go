@@ -1,16 +1,26 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"github.com/cilliandevops/kops/server-go/pkg/logger"
+	"github.com/gin-gonic/gin"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hello, World!")
-}
-
 func main() {
-	http.HandleFunc("/", handler)
-	fmt.Println("Server is running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	// 初始化配置
+	// config.LoadConfig()
+
+	// 初始化日志
+	logger.InitLogger()
+
+	// 初始化监控
+	// metrics.RecordMetrics()
+
+	// 初始化 Gin 引擎
+	r := gin.Default()
+
+	// 设置路由
+	// routes.SetupRoutes(r)
+
+	// 启动服务器
+	r.Run(":8080")
 }
