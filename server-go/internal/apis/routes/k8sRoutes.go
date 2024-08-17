@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/cilliandevops/kops/api/server-go/controllers"
+	"github.com/cilliandevops/kops/server-go/api/controllers"
 	"github.com/cilliandevops/kops/server-go/api/middlewares"
 	"github.com/gin-gonic/gin"
 )

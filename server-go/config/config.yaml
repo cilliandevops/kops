@@ -1,0 +1,6 @@
+# config/config.yaml
+server:
+  port: ":8080"
+
+k8s:
+  configPath: "/home/cillian/.kube/config"
