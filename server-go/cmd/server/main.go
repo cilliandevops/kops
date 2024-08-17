@@ -19,6 +19,7 @@ func main() {
 	// 初始化应用程序
 	app := app.NewApp(client.Clientset)
 
+
 	// 启动服务器
 	if err := app.Run(config.Cfg.Server.Port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
