@@ -1,21 +1,23 @@
 package client
 
 import (
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"log"
+
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
-func NewK8sClient() *kubernetes.Clientset {
-	config, err := rest.InClusterConfig()
+var Clientset *kubernetes.Clientset
+
+// InitK8sClient initializes the Kubernetes client using the provided kubeconfig path.
+func InitK8sClient(kubeconfig string) {
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
-		log.Fatalf("Error creating in-cluster config: %v", err)
+		log.Fatalf("Error building kubeconfig: %v", err)
 	}
 
-	clientset, err := kubernetes.NewForConfig(config)
+	Clientset, err = kubernetes.NewForConfig(config)
 	if err != nil {
 		log.Fatalf("Error creating Kubernetes client: %v", err)
 	}
-
-	return clientset
 }
