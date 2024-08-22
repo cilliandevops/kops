@@ -15,14 +15,9 @@ type DeploymentService struct {
 	client *client.Client
 }
 
-// NewDeploymentService creates a new DeploymentService instance
-func NewDeploymentService(kubeconfig string) (*DeploymentService, error) {
-	c, err := client.NewClient(kubeconfig)
-	if err != nil {
-		return nil, err
-	}
-
-	return &DeploymentService{client: c}, nil
+// NewDeploymentService creates a new DeploymentService instance with a Kubernetes client
+func NewDeploymentService(k8sClient *client.Client) *DeploymentService {
+	return &DeploymentService{client: k8sClient}
 }
 
 // ListDeployments retrieves a list of Deployments in the specified namespace

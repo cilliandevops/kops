@@ -7,7 +7,8 @@ import (
 )
 
 // RegisterK8sRoutes registers the routes for the Kubernetes operations
-func RegisterK8sRoutes(r *gin.Engine, deploymentService *services.DeploymentService) {
+func RegisterK8sRoutes(r *gin.Engine, deploymentService *services.DeploymentService, podService *services.PodService) {
+
 	v1 := r.Group("/apis/v1/k8s")
 	// v1.Use(middlewares.AuthMiddleware)
 
@@ -17,4 +18,10 @@ func RegisterK8sRoutes(r *gin.Engine, deploymentService *services.DeploymentServ
 	v1.POST("/deployments", deploymentHandler.CreateDeployment)
 	v1.PUT("/deployments/:namespace/:name", deploymentHandler.UpdateDeployment)
 	v1.DELETE("/deployments/:namespace/:name", deploymentHandler.DeleteDeployment)
+	// Pod routes
+	podHandler := k8s.NewPodController(podService)
+	v1.GET("/pods/:namespace", podHandler.ListPods)
+	v1.GET("/pods/:namespace/:name", podHandler.GetPod)
+	v1.POST("/pods/:namespace", podHandler.CreatePod)
+	v1.DELETE("/pods/:namespace/:name", podHandler.DeletePod)
 }
