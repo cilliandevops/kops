@@ -23,9 +23,10 @@ func main() {
 	// 初始化服务
 	deploymentService := services.NewDeploymentService(k8sClient)
 	podService := services.NewPodService(k8sClient)
+	serviceService := services.NewServiceService(k8sClient)
 
 	// 初始化应用程序
-	myApp := app.NewApp(deploymentService, podService)
+	myApp := app.NewApp(deploymentService, podService, serviceService)
 
 	// 启动服务器
 	if err := myApp.Run(config.Cfg.Server.Port); err != nil {
