@@ -7,7 +7,13 @@ import (
 )
 
 // RegisterK8sRoutes registers the routes for the Kubernetes operations
-func RegisterK8sRoutes(r *gin.Engine, deploymentService *services.DeploymentService, podService *services.PodService, serviceService *services.ServiceService) {
+func RegisterK8sRoutes(
+	r *gin.Engine,
+	deploymentService *services.DeploymentService,
+	podService *services.PodService,
+	serviceService *services.ServiceService,
+	daemonSetService *services.DaemonSetService,
+	statefulSetService *services.StatefulSetService) {
 
 	v1 := r.Group("/apis/v1/k8s")
 	// v1.Use(middlewares.AuthMiddleware)
@@ -31,4 +37,20 @@ func RegisterK8sRoutes(r *gin.Engine, deploymentService *services.DeploymentServ
 	v1.GET("/services/:namespace/:name", serviceHandler.GetService)
 	v1.POST("/services/:namespace", serviceHandler.CreateService)
 	v1.DELETE("/services/:namespace/:name", serviceHandler.DeleteService)
+
+	// DaemonSet routes
+	daemonSetHandler := k8s.NewDaemonSetHandler(daemonSetService)
+	v1.GET("/daemonsets", daemonSetHandler.ListDaemonSets)
+	v1.GET("/daemonsets/:namespace/:name", daemonSetHandler.GetDaemonSet)
+	v1.POST("/daemonsets", daemonSetHandler.CreateDaemonSet)
+	v1.PUT("/daemonsets/:namespace/:name", daemonSetHandler.UpdateDaemonSet)
+	v1.DELETE("/daemonsets/:namespace/:name", daemonSetHandler.DeleteDaemonSet)
+
+	// StatefulSet 路由
+	statefulSetHandler := k8s.NewStatefulSetHandler(statefulSetService)
+	v1.GET("/statefulsets/:namespace", statefulSetHandler.ListStatefulSets)
+	v1.GET("/statefulsets/:namespace/:name", statefulSetHandler.GetStatefulSet)
+	v1.POST("/statefulsets/:namespace", statefulSetHandler.CreateStatefulSet)
+	v1.PUT("/statefulsets/:namespace/:name", statefulSetHandler.UpdateStatefulSet)
+	v1.DELETE("/statefulsets/:namespace/:name", statefulSetHandler.DeleteStatefulSet)
 }

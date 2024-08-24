@@ -24,9 +24,10 @@ func main() {
 	deploymentService := services.NewDeploymentService(k8sClient)
 	podService := services.NewPodService(k8sClient)
 	serviceService := services.NewServiceService(k8sClient)
-
+	daemonSetService := services.NewDaemonSetService(k8sClient) // 新增 DaemonSet 服务
+	statefulSetService := services.NewStatefulSetService(k8sClient)
 	// 初始化应用程序
-	myApp := app.NewApp(deploymentService, podService, serviceService)
+	myApp := app.NewApp(deploymentService, podService, serviceService, daemonSetService, statefulSetService)
 
 	// 启动服务器
 	if err := myApp.Run(config.Cfg.Server.Port); err != nil {
