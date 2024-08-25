@@ -13,7 +13,16 @@ func RegisterK8sRoutes(
 	podService *services.PodService,
 	serviceService *services.ServiceService,
 	daemonSetService *services.DaemonSetService,
-	statefulSetService *services.StatefulSetService) {
+	statefulSetService *services.StatefulSetService,
+	nodeService *services.NodeService,
+	clusterService *services.ClusterService,
+	ingressService *services.IngressService,
+	configMapService *services.ConfigMapService,
+	secretService *services.SecretService,
+	namespaceService *services.NamespaceService,
+	pvService *services.PVService,
+	pvcService *services.PVCService,
+	storageClassService *services.StorageClassService) {
 
 	v1 := r.Group("/apis/v1/k8s")
 	// v1.Use(middlewares.AuthMiddleware)
@@ -53,4 +62,62 @@ func RegisterK8sRoutes(
 	v1.POST("/statefulsets/:namespace", statefulSetHandler.CreateStatefulSet)
 	v1.PUT("/statefulsets/:namespace/:name", statefulSetHandler.UpdateStatefulSet)
 	v1.DELETE("/statefulsets/:namespace/:name", statefulSetHandler.DeleteStatefulSet)
+
+	// Node 路由
+	nodeHandler := k8s.NewNodeHandler(nodeService)
+	v1.GET("/nodes", nodeHandler.ListNodes)
+	v1.GET("/nodes/:name", nodeHandler.GetNode)
+	v1.POST("/nodes", nodeHandler.CreateNode)
+	v1.DELETE("/nodes/:name", nodeHandler.DeleteNode)
+
+	// 集群信息相关路由
+	clusterHandler := k8s.NewClusterHandler(clusterService)
+	v1.GET("/cluster/info", clusterHandler.GetClusterInfo)
+
+	ingressHandler := k8s.NewIngressHandler(ingressService)
+	v1.GET("/ingresses/:namespace", ingressHandler.ListIngresses)
+	v1.GET("/ingresses/:namespace/:name", ingressHandler.GetIngress)
+	v1.POST("/ingresses/:namespace", ingressHandler.CreateIngress)
+	v1.DELETE("/ingresses/:namespace/:name", ingressHandler.DeleteIngress)
+	// ConfigMap 路由
+	configMapController := k8s.NewConfigMapController(configMapService)
+	v1.POST("/namespaces/:namespace/configmaps", configMapController.CreateConfigMap)
+	v1.GET("/namespaces/:namespace/configmaps/:name", configMapController.GetConfigMap)
+	v1.PUT("/namespaces/:namespace/configmaps/:name", configMapController.UpdateConfigMap)
+	v1.DELETE("/namespaces/:namespace/configmaps/:name", configMapController.DeleteConfigMap)
+
+	// Secret 路由
+	secretController := k8s.NewSecretController(secretService)
+	v1.POST("/namespaces/:namespace/secrets", secretController.CreateSecret)
+	v1.GET("/namespaces/:namespace/secrets/:name", secretController.GetSecret)
+	v1.PUT("/namespaces/:namespace/secrets/:name", secretController.UpdateSecret)
+	v1.DELETE("/namespaces/:namespace/secrets/:name", secretController.DeleteSecret)
+
+	// Namespace routes
+	namespaceHandler := k8s.NewNamespaceHandler(namespaceService)
+	v1.GET("/namespace", namespaceHandler.ListNamespaces)
+	v1.GET("/namespace/:namespaces", namespaceHandler.GetNamespace)
+	v1.POST("/namespace", namespaceHandler.CreateNamespace)
+	v1.DELETE("/namespace/:namespaces", namespaceHandler.DeleteNamespace)
+
+	// Persistent Volume 路由
+	pvController := k8s.NewPVController(pvService)
+	v1.POST("/persistentvolumes", pvController.CreatePV)
+	v1.GET("/persistentvolumes/:name", pvController.GetPV)
+	v1.PUT("/persistentvolumes/:name", pvController.UpdatePV)
+	v1.DELETE("/persistentvolumes/:name", pvController.DeletePV)
+
+	// Persistent Volume Claim 路由
+	pvcController := k8s.NewPVCController(pvcService)
+	v1.POST("/namespaces/:namespace/persistentvolumeclaims", pvcController.CreatePVC)
+	v1.GET("/namespaces/:namespace/persistentvolumeclaims/:name", pvcController.GetPVC)
+	v1.PUT("/namespaces/:namespace/persistentvolumeclaims/:name", pvcController.UpdatePVC)
+	v1.DELETE("/namespaces/:namespace/persistentvolumeclaims/:name", pvcController.DeletePVC)
+
+	// StorageClass 路由
+	storageClassController := k8s.NewStorageClassController(storageClassService)
+	v1.POST("/storageclasses", storageClassController.CreateStorageClass)
+	v1.GET("/storageclasses/:name", storageClassController.GetStorageClass)
+	v1.PUT("/storageclasses/:name", storageClassController.UpdateStorageClass)
+	v1.DELETE("/storageclasses/:name", storageClassController.DeleteStorageClass)
 }
