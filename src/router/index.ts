@@ -48,6 +48,10 @@ export const constantRoutes: RouteRecordRaw[] = [
     path: "/",
     component: Layouts,
     redirect: "/dashboard",
+    meta: {
+      title: "看板",
+      svgIcon: "dashboard"
+    },
     children: [
       {
         path: "dashboard",
@@ -55,7 +59,6 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "Dashboard",
         meta: {
           title: "概要",
-          svgIcon: "dashboard",
           affix: true
         }
       },
@@ -79,17 +82,82 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
 
   {
-    path: "/unocss",
+    path: "/workloads",
     component: Layouts,
     redirect: "/unocss/index",
+    meta: {
+      title: "工作负载",
+      svgIcon: "kubernetes"
+    },
     children: [
       {
-        path: "index",
-        component: () => import("@/views/unocss/index.vue"),
-        name: "UnoCSS",
+        path: "notice",
+        component: () => import("@/views/notice/index.vue"),
+        name: "Notice",
         meta: {
-          title: "UnoCSS",
-          svgIcon: "unocss"
+          title: "pod"
+        }
+      },
+      {
+        path: "navigation",
+        component: () => import("@/views/error-page/404.vue"),
+        name: "Nav",
+        meta: {
+          title: "deployment"
+        }
+      }
+    ]
+  },
+  {
+    path: "/workloads",
+    component: Layouts,
+    redirect: "/unocss/index",
+    meta: {
+      title: "存储",
+      svgIcon: "kubernetes1"
+    },
+    children: [
+      {
+        path: "notice",
+        component: () => import("@/views/notice/index.vue"),
+        name: "Notice",
+        meta: {
+          title: "pv"
+        }
+      },
+      {
+        path: "navigation",
+        component: () => import("@/views/error-page/404.vue"),
+        name: "Nav",
+        meta: {
+          title: "pvc"
+        }
+      }
+    ]
+  },
+  {
+    path: "/workloads",
+    component: Layouts,
+    redirect: "/unocss/index",
+    meta: {
+      title: "网络",
+      svgIcon: "icon1"
+    },
+    children: [
+      {
+        path: "notice",
+        component: () => import("@/views/notice/index.vue"),
+        name: "Notice",
+        meta: {
+          title: "service"
+        }
+      },
+      {
+        path: "navigation",
+        component: () => import("@/views/error-page/404.vue"),
+        name: "Nav",
+        meta: {
+          title: "ingress"
         }
       }
     ]
@@ -97,7 +165,7 @@ export const constantRoutes: RouteRecordRaw[] = [
   {
     path: "/link",
     meta: {
-      title: "文档管理",
+      title: "文档",
       svgIcon: "link"
     },
     children: [
