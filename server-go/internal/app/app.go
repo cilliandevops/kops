@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/cilliandevops/kops/server-go/internal/apis/middlewares"
 	"github.com/cilliandevops/kops/server-go/internal/apis/routes"
 	"github.com/cilliandevops/kops/server-go/internal/apis/services"
 	"github.com/gin-gonic/gin"
@@ -44,6 +45,7 @@ func NewApp(
 	gin.SetMode(gin.DebugMode)
 	// 初始化 Gin 引擎
 	router := gin.Default()
+	router.Use(middlewares.Cors())
 
 	// 注册 API 路由，并将 DeploymentService 传递给路由
 	routes.RegisterK8sRoutes(
