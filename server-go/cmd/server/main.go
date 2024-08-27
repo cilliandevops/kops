@@ -51,7 +51,6 @@ func main() {
 		pvService,
 		pvcService,
 		scService)
-
 	// 启动服务器
 	if err := myApp.Run(config.Cfg.Server.Port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
