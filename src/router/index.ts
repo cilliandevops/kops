@@ -80,6 +80,32 @@ export const constantRoutes: RouteRecordRaw[] = [
       }
     ]
   },
+  {
+    path: "/cluster",
+    component: Layouts,
+    meta: {
+      title: "集群",
+      svgIcon: "kubernetes"
+    },
+    children: [
+      {
+        path: "node",
+        component: () => import("@/views/node/index.vue"),
+        name: "Node",
+        meta: {
+          title: "node"
+        }
+      },
+      {
+        path: "navigation",
+        component: () => import("@/views/error-page/404.vue"),
+        name: "Nav",
+        meta: {
+          title: "deployment"
+        }
+      }
+    ]
+  },
 
   {
     path: "/workloads",

@@ -20,7 +20,7 @@ func NewNodeService(client *client.Client) *NodeService {
 	}
 }
 
-// ListNodes returns a list of all Nodes
+// ListNodes returns a list of all Nodes with detailed information
 func (s *NodeService) ListNodes() ([]k8s.NodeModel, error) {
 	nodes, err := s.client.Clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
@@ -45,7 +45,6 @@ func (s *NodeService) GetNode(name string) (*k8s.NodeModel, error) {
 }
 
 // CreateNode creates a new Node
-// Note: Creating a Node programmatically is not common in Kubernetes. Nodes are usually added by the cluster itself.
 func (s *NodeService) CreateNode(node *v1.Node) (*k8s.NodeModel, error) {
 	createdNode, err := s.client.Clientset.CoreV1().Nodes().Create(context.Background(), node, metav1.CreateOptions{})
 	if err != nil {
