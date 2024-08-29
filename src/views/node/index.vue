@@ -10,7 +10,7 @@
       <el-table-column prop="creationTime" label="创建时间" width="180" />
       <el-table-column prop="cpuUsage" label="CPU 使用情况" width="180" />
       <el-table-column prop="memoryUsage" label="内存使用情况" width="180" />
-      <el-table-column prop="podCount" label="Pod 数量" width="100" align="center" />
+      <el-table-column prop="podCount" label="Pod 数量" width="100" />
       <el-table-column label="IP 地址" width="200">
         <template #default="{ row }">
           <div v-for="ip in row.ipAddresses" :key="ip" class="ip-address">
@@ -18,21 +18,21 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="标签" width="200">
+      <el-table-column label="标签" width="300">
         <template #default="{ row }">
           <div v-for="(value, key) in row.labels" :key="key" class="label-tag">
             <el-tag>{{ key }}: {{ value }}</el-tag>
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="注解" width="200">
+      <el-table-column label="注解" width="300" show-overflow-tooltip>
         <template #default="{ row }">
           <div v-for="(value, key) in row.annotations" :key="key" class="annotation-tag">
             <el-tag>{{ key }}: {{ value }}</el-tag>
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="status" label="状态" width="100" align="center" />
+      <el-table-column prop="status" label="状态" width="100" />
     </el-table>
 
     <!-- 分页组件 -->

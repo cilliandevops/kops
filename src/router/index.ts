@@ -97,11 +97,11 @@ export const constantRoutes: RouteRecordRaw[] = [
         }
       },
       {
-        path: "navigation",
-        component: () => import("@/views/error-page/404.vue"),
-        name: "Nav",
+        path: "naemspace",
+        component: () => import("@/views/namespace/index.vue"),
+        name: "Namespace",
         meta: {
-          title: "deployment"
+          title: "namespace"
         }
       }
     ]

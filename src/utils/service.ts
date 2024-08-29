@@ -28,7 +28,7 @@ function createService() {
       // 二进制数据则直接返回
       const responseType = response.request?.responseType
       if (responseType === "blob" || responseType === "arraybuffer") return apiData
-      if (response.config.url?.startsWith("/apis/v1/k8s/nodes")) {
+      if (response.config.url?.startsWith("/apis/v1/k8s")) {
         return apiData
       }
       // 这个 code 是和后端约定的业务 code
