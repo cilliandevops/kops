@@ -79,6 +79,7 @@ func RegisterK8sRoutes(
 	v1.GET("/ingresses/:namespace/:name", ingressHandler.GetIngress)
 	v1.POST("/ingresses/:namespace", ingressHandler.CreateIngress)
 	v1.DELETE("/ingresses/:namespace/:name", ingressHandler.DeleteIngress)
+
 	// ConfigMap 路由
 	configMapController := k8s.NewConfigMapController(configMapService)
 	v1.POST("/namespaces/:namespace/configmaps", configMapController.CreateConfigMap)

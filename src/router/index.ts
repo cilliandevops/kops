@@ -116,26 +116,26 @@ export const constantRoutes: RouteRecordRaw[] = [
       svgIcon: "kubernetes"
     },
     children: [
-      {
-        path: "notice",
-        component: () => import("@/views/notice/index.vue"),
-        name: "Notice",
-        meta: {
-          title: "pod"
-        }
-      },
-      {
-        path: "navigation",
-        component: () => import("@/views/error-page/404.vue"),
-        name: "Nav",
-        meta: {
-          title: "deployment"
-        }
-      }
+      // {
+      //   path: "notice",
+      //   component: () => import("@/views/notice/index.vue"),
+      //   name: "Notice",
+      //   meta: {
+      //     title: "pod"
+      //   }
+      // },
+      // {
+      //   path: "navigation",
+      //   component: () => import("@/views/error-page/404.vue"),
+      //   name: "Nav",
+      //   meta: {
+      //     title: "deployment"
+      //   }
+      // }
     ]
   },
   {
-    path: "/workloads",
+    path: "/storage",
     component: Layouts,
     redirect: "/unocss/index",
     meta: {
@@ -143,26 +143,26 @@ export const constantRoutes: RouteRecordRaw[] = [
       svgIcon: "kubernetes1"
     },
     children: [
-      {
-        path: "notice",
-        component: () => import("@/views/notice/index.vue"),
-        name: "Notice",
-        meta: {
-          title: "pv"
-        }
-      },
-      {
-        path: "navigation",
-        component: () => import("@/views/error-page/404.vue"),
-        name: "Nav",
-        meta: {
-          title: "pvc"
-        }
-      }
+      // {
+      //   path: "notice",
+      //   component: () => import("@/views/notice/index.vue"),
+      //   name: "Notice",
+      //   meta: {
+      //     title: "pv"
+      //   }
+      // },
+      // {
+      //   path: "navigation",
+      //   component: () => import("@/views/error-page/404.vue"),
+      //   name: "Nav",
+      //   meta: {
+      //     title: "pvc"
+      //   }
+      // }
     ]
   },
   {
-    path: "/workloads",
+    path: "/network",
     component: Layouts,
     redirect: "/unocss/index",
     meta: {
@@ -171,7 +171,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: "notice",
+        path: "service",
         component: () => import("@/views/notice/index.vue"),
         name: "Notice",
         meta: {
@@ -179,8 +179,8 @@ export const constantRoutes: RouteRecordRaw[] = [
         }
       },
       {
-        path: "navigation",
-        component: () => import("@/views/error-page/404.vue"),
+        path: "ingress",
+        component: () => import("@/views/ingress/index.vue"),
         name: "Nav",
         meta: {
           title: "ingress"
