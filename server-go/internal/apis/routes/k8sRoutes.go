@@ -33,12 +33,14 @@ func RegisterK8sRoutes(
 	v1.POST("/deployments", deploymentHandler.CreateDeployment)
 	v1.PUT("/deployments/:namespace/:name", deploymentHandler.UpdateDeployment)
 	v1.DELETE("/deployments/:namespace/:name", deploymentHandler.DeleteDeployment)
+
 	// Pod routes
 	podHandler := k8s.NewPodController(podService)
 	v1.GET("/pods/:namespace", podHandler.ListPods)
 	v1.GET("/pods/:namespace/:name", podHandler.GetPod)
 	v1.POST("/pods/:namespace", podHandler.CreatePod)
 	v1.DELETE("/pods/:namespace/:name", podHandler.DeletePod)
+
 	// Service routes
 	serviceHandler := k8s.NewServiceHandler(serviceService)
 	v1.GET("/services", serviceHandler.ListAllServices) // 新增：列出所有 Services
@@ -79,6 +81,7 @@ func RegisterK8sRoutes(
 	v1.GET("/ingresses/:namespace/:name", ingressHandler.GetIngress)
 	v1.POST("/ingresses/:namespace", ingressHandler.CreateIngress)
 	v1.DELETE("/ingresses/:namespace/:name", ingressHandler.DeleteIngress)
+
 	// ConfigMap 路由
 	configMapController := k8s.NewConfigMapController(configMapService)
 	v1.POST("/namespaces/:namespace/configmaps", configMapController.CreateConfigMap)
