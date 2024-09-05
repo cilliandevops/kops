@@ -164,7 +164,6 @@ export const constantRoutes: RouteRecordRaw[] = [
   {
     path: "/network",
     component: Layouts,
-    redirect: "/unocss/index",
     meta: {
       title: "网络",
       svgIcon: "icon1"
@@ -172,8 +171,8 @@ export const constantRoutes: RouteRecordRaw[] = [
     children: [
       {
         path: "service",
-        component: () => import("@/views/notice/index.vue"),
-        name: "Notice",
+        component: () => import("@/views/service/index.vue"),
+        name: "service",
         meta: {
           title: "service"
         }
