@@ -137,28 +137,27 @@ export const constantRoutes: RouteRecordRaw[] = [
   {
     path: "/storage",
     component: Layouts,
-    redirect: "/unocss/index",
     meta: {
       title: "存储",
       svgIcon: "kubernetes1"
     },
     children: [
-      // {
-      //   path: "notice",
-      //   component: () => import("@/views/notice/index.vue"),
-      //   name: "Notice",
-      //   meta: {
-      //     title: "pv"
-      //   }
-      // },
-      // {
-      //   path: "navigation",
-      //   component: () => import("@/views/error-page/404.vue"),
-      //   name: "Nav",
-      //   meta: {
-      //     title: "pvc"
-      //   }
-      // }
+      {
+        path: "persistentvolume",
+        component: () => import("@/views/persistentvolume/index.vue"),
+        name: "Notice",
+        meta: {
+          title: "pv"
+        }
+      },
+      {
+        path: "persistentvolumeclaim",
+        component: () => import("@/views/persistentvolumeclaim/index.vue"),
+        name: "persistentvolume",
+        meta: {
+          title: "pvc"
+        }
+      }
     ]
   },
   {
