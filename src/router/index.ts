@@ -116,22 +116,22 @@ export const constantRoutes: RouteRecordRaw[] = [
       svgIcon: "kubernetes"
     },
     children: [
-      // {
-      //   path: "notice",
-      //   component: () => import("@/views/notice/index.vue"),
-      //   name: "Notice",
-      //   meta: {
-      //     title: "pod"
-      //   }
-      // },
-      // {
-      //   path: "navigation",
-      //   component: () => import("@/views/error-page/404.vue"),
-      //   name: "Nav",
-      //   meta: {
-      //     title: "deployment"
-      //   }
-      // }
+      {
+        path: "pods",
+        component: () => import("@/views/pods/index.vue"),
+        name: "pods",
+        meta: {
+          title: "pod"
+        }
+      },
+      {
+        path: "deployments",
+        component: () => import("@/views/deployments/index.vue"),
+        name: "deployments",
+        meta: {
+          title: "deployment"
+        }
+      }
     ]
   },
   {
