@@ -187,6 +187,35 @@ export const constantRoutes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: "/config",
+    component: Layouts,
+    name: "Table",
+    meta: {
+      title: "配置管理",
+      svgIcon: "config"
+    },
+    children: [
+      {
+        path: "configmap",
+        component: () => import("@/views/configmap/index.vue"),
+        name: "ElementPlus",
+        meta: {
+          title: "configmap",
+          keepAlive: true
+        }
+      },
+      {
+        path: "secret",
+        component: () => import("@/views/secret/index.vue"),
+        name: "secret",
+        meta: {
+          title: "secret",
+          keepAlive: true
+        }
+      }
+    ]
+  },
+  {
     path: "/link",
     meta: {
       title: "文档",
