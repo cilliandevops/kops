@@ -3,7 +3,7 @@ export interface ListItem {
   title: string
   datetime?: string
   description?: string
-  status?: "" | "success" | "info" | "warning" | "danger"
+  status?: "success" | "warning" | "info" | "danger" | "primary"
   extra?: string
 }
 
