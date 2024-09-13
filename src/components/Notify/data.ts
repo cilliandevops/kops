@@ -60,7 +60,7 @@ export const todoData: ListItem[] = [
     title: "任务二",
     description: "加希里安微信cilliandevops",
     extra: "进行中",
-    status: ""
+    status: "info"
   },
   {
     title: "任务三",
