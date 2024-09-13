@@ -3,7 +3,7 @@ export interface ListItem {
   title: string
   datetime?: string
   description?: string
-  status?: "" | "success" | "info" | "warning" | "danger"
+  status?: "success" | "warning" | "info" | "danger" | "primary"
   extra?: string
 }
 
@@ -60,7 +60,7 @@ export const todoData: ListItem[] = [
     title: "任务二",
     description: "加希里安微信cilliandevops",
     extra: "进行中",
-    status: ""
+    status: "info"
   },
   {
     title: "任务三",
