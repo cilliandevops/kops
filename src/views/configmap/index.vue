@@ -31,7 +31,7 @@
         </el-form-item>
         <el-form-item label="数据">
           <div v-for="(value, key) in currentConfigMap.data" :key="key">
-            <el-input v-model="currentConfigMap.data[key]" :placeholder="key" />
+            <el-input v-model="currentConfigMap.data[key]" :placeholder="String(key)" />
           </div>
         </el-form-item>
       </el-form>
@@ -113,12 +113,16 @@ export default defineComponent({
 
     const handleEdit = (configMap: ConfigMap) => {
       dialogTitle.value = "编辑ConfigMap"
-      currentConfigMap.value = JSON.parse(JSON.stringify(configMap))
+      currentConfigMap.value = JSON.parse(JSON.stringify(configMap)) // 深拷贝
       dialogVisible.value = true
     }
 
     const handleSave = async () => {
       try {
+        if (!currentConfigMap.value.metadata.name) {
+          ElMessage.error("ConfigMap名称不能为空")
+          return
+        }
         if (dialogTitle.value === "新增ConfigMap") {
           await request<ConfigMap>({
             url: "/apis/v1/k8s/configmaps",
