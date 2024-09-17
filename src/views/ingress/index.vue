@@ -35,7 +35,9 @@
           <el-input v-model="currentIngress.namespace" />
         </el-form-item>
         <el-form-item label="规则">
-          <el-input v-model="currentIngress.spec" />
+          <div v-for="(rule, index) in currentIngress.spec.rules" :key="index">
+            <el-input v-model="rule.host" :placeholder="'规则 ' + (index + 1)" />
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -69,9 +71,9 @@ export default defineComponent({
   name: "Ingress",
   setup() {
     const ingressData = ref<IngressSpec[]>([])
-    const currentPage = ref(1)
-    const pageSize = ref(10)
-    const dialogVisible = ref(false)
+    const currentPage = ref<number>(1)
+    const pageSize = ref<number>(10)
+    const dialogVisible = ref<boolean>(false)
     const currentIngress = ref<IngressSpec>({ name: "", namespace: "", spec: { rules: [] } })
 
     const currentPageData = computed(() => {

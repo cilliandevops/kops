@@ -21,7 +21,7 @@
     />
 
     <!-- 新增/编辑Secret对话框 -->
-    <el-dialog :title="dialogTitle" v-model="dialogVisible">
+    <el-dialog :title="dialogTitle" v-model:visible="dialogVisible">
       <el-form :model="currentSecret" label-width="120px">
         <el-form-item label="Secret名称">
           <el-input v-model="currentSecret.metadata.name" />
@@ -31,7 +31,7 @@
         </el-form-item>
         <el-form-item label="数据">
           <div v-for="(value, key) in currentSecret.data" :key="key">
-            <el-input v-model="currentSecret.data[key]" :placeholder="key" />
+            <el-input v-model="currentSecret.data[key]" :placeholder="String(key)" />
           </div>
         </el-form-item>
       </el-form>
