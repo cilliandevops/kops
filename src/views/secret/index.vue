@@ -30,13 +30,9 @@
           <el-input v-model="currentSecret.metadata.namespace" />
         </el-form-item>
         <el-form-item label="数据">
-          <el-input
-            v-model="currentSecret.data[key]"
-            v-for="(value, key) in currentSecret.data"
-            :key="key"
-            :label="key"
-            :placeholder="key"
-          />
+          <div v-for="(value, key) in currentSecret.data" :key="key">
+            <el-input v-model="currentSecret.data[key]" :placeholder="key" />
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -67,10 +63,10 @@ export default defineComponent({
   name: "Secret",
   setup() {
     const secretData = ref<Secret[]>([])
-    const currentPage = ref(1)
-    const pageSize = ref(10)
-    const dialogVisible = ref(false)
-    const dialogTitle = ref("新增Secret")
+    const currentPage = ref<number>(1)
+    const pageSize = ref<number>(10)
+    const dialogVisible = ref<boolean>(false)
+    const dialogTitle = ref<string>("新增Secret")
     const currentSecret = ref<Secret>({
       metadata: {
         name: "",
@@ -93,9 +89,10 @@ export default defineComponent({
           baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
         })
         console.log("API response:", response)
-        secretData.value = response
+        secretData.value = response || []
       } catch (error) {
         console.error("获取Secret数据失败:", error)
+        ElMessage.error("获取Secret数据失败")
       }
     }
 
@@ -123,23 +120,20 @@ export default defineComponent({
 
     const handleSave = async () => {
       try {
-        if (dialogTitle.value === "新增Secret") {
-          await request<Secret>({
-            url: "/apis/v1/k8s/secrets",
-            method: "post",
-            data: currentSecret.value,
-            baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
-          })
-          ElMessage.success("Secret新增成功")
-        } else {
-          await request<Secret>({
-            url: `/apis/v1/k8s/secrets/${currentSecret.value.metadata.name}`,
-            method: "put",
-            data: currentSecret.value,
-            baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
-          })
-          ElMessage.success("Secret编辑成功")
-        }
+        const method = dialogTitle.value === "新增Secret" ? "post" : "put"
+        const url =
+          dialogTitle.value === "新增Secret"
+            ? "/apis/v1/k8s/secrets"
+            : `/apis/v1/k8s/secrets/${currentSecret.value.metadata.name}`
+
+        await request<Secret>({
+          url,
+          method,
+          data: currentSecret.value,
+          baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
+        })
+
+        ElMessage.success(`${dialogTitle.value}成功`)
         dialogVisible.value = false
         fetchSecretData()
       } catch (error) {
