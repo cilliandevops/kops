@@ -30,13 +30,9 @@
           <el-input v-model="currentConfigMap.metadata.namespace" />
         </el-form-item>
         <el-form-item label="数据">
-          <el-input
-            v-model="currentConfigMap.data[key]"
-            v-for="(value, key) in currentConfigMap.data"
-            :key="key"
-            :label="key"
-            :placeholder="key"
-          />
+          <div v-for="(value, key) in currentConfigMap.data" :key="key">
+            <el-input v-model="currentConfigMap.data[key]" :placeholder="key" />
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -67,10 +63,10 @@ export default defineComponent({
   name: "ConfigMap",
   setup() {
     const configMapData = ref<ConfigMap[]>([])
-    const currentPage = ref(1)
-    const pageSize = ref(10)
-    const dialogVisible = ref(false)
-    const dialogTitle = ref("新增ConfigMap")
+    const currentPage = ref<number>(1)
+    const pageSize = ref<number>(10)
+    const dialogVisible = ref<boolean>(false)
+    const dialogTitle = ref<string>("新增ConfigMap")
     const currentConfigMap = ref<ConfigMap>({
       metadata: {
         name: "",
@@ -90,12 +86,12 @@ export default defineComponent({
         const response = await request<ConfigMap[]>({
           url: "/apis/v1/k8s/configmaps/default",
           method: "get",
-          baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
+          baseURL: "http://localhost:8080"
         })
-        console.log("API response:", response)
-        configMapData.value = response
+        configMapData.value = response || []
       } catch (error) {
         console.error("获取ConfigMap数据失败:", error)
+        ElMessage.error("获取ConfigMap数据失败")
       }
     }
 
@@ -128,7 +124,7 @@ export default defineComponent({
             url: "/apis/v1/k8s/configmaps",
             method: "post",
             data: currentConfigMap.value,
-            baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
+            baseURL: "http://localhost:8080"
           })
           ElMessage.success("ConfigMap新增成功")
         } else {
@@ -136,7 +132,7 @@ export default defineComponent({
             url: `/apis/v1/k8s/configmaps/${currentConfigMap.value.metadata.name}`,
             method: "put",
             data: currentConfigMap.value,
-            baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
+            baseURL: "http://localhost:8080"
           })
           ElMessage.success("ConfigMap编辑成功")
         }
@@ -158,7 +154,7 @@ export default defineComponent({
           await request<ConfigMap>({
             url: `/apis/v1/k8s/configmaps/${configMap.metadata.name}`,
             method: "delete",
-            baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
+            baseURL: "http://localhost:8080"
           })
           ElMessage.success("ConfigMap删除成功")
           fetchConfigMapData()
