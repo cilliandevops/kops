@@ -3,7 +3,7 @@
     <el-table :data="currentPageData" border stripe style="width: 100%">
       <el-table-column prop="name" label="名称" width="180" />
       <el-table-column prop="namespace" label="命名空间" width="180" />
-      <el-table-column prop="spec" label="规则" width="300">
+      <el-table-column prop="spec.rules" label="规则" width="300">
         <template #default="{ row }">
           <div v-for="(rule, index) in row.spec.rules" :key="index" class="rule-tag">
             <el-tag>{{ rule.host }}</el-tag>
@@ -18,7 +18,6 @@
       </el-table-column>
     </el-table>
 
-    <!-- 分页组件 -->
     <el-pagination
       v-model:currentPage="currentPage"
       :page-size="pageSize"
@@ -27,7 +26,6 @@
       @current-change="handlePageChange"
     />
 
-    <!-- 弹窗组件 -->
     <el-dialog v-model:visible="dialogVisible" title="Ingress">
       <el-form :model="currentIngress">
         <el-form-item label="名称">
@@ -40,7 +38,7 @@
           <el-input v-model="currentIngress.spec" />
         </el-form-item>
       </el-form>
-      <template v-slot:footer>
+      <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
           <el-button type="primary" @click="saveIngress">保存</el-button>
@@ -87,10 +85,9 @@ export default defineComponent({
         const response = await request<IngressSpec[]>({
           url: "/apis/v1/k8s/ingresses/default",
           method: "get",
-          baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
+          baseURL: "http://localhost:8080"
         })
-        console.log("API response:", response)
-        ingressData.value = response
+        ingressData.value = response || []
       } catch (error) {
         console.error("获取 Ingress 数据失败:", error)
       }
@@ -98,21 +95,17 @@ export default defineComponent({
 
     const saveIngress = async () => {
       try {
-        if (currentIngress.value.name) {
-          await request({
-            url: `/apis/v1/k8s/ingresses/${currentIngress.value.name}`,
-            method: "put",
-            data: currentIngress.value,
-            baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
-          })
-        } else {
-          await request({
-            url: "/apis/v1/k8s/ingresses",
-            method: "post",
-            data: currentIngress.value,
-            baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
-          })
-        }
+        const method = currentIngress.value.name ? "put" : "post"
+        const url = currentIngress.value.name
+          ? `/apis/v1/k8s/ingresses/${currentIngress.value.name}`
+          : "/apis/v1/k8s/ingresses"
+
+        await request({
+          url,
+          method,
+          data: currentIngress.value,
+          baseURL: "http://localhost:8080"
+        })
         fetchIngressData()
         dialogVisible.value = false
       } catch (error) {
@@ -125,7 +118,7 @@ export default defineComponent({
         await request({
           url: `/apis/v1/k8s/ingresses/${name}`,
           method: "delete",
-          baseURL: "http://localhost:8080" // 可根据需要调整 baseURL
+          baseURL: "http://localhost:8080"
         })
         fetchIngressData()
       } catch (error) {
