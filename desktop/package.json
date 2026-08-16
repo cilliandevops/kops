@@ -5,7 +5,7 @@
   "description": "CiliKube desktop shell (Electron + Go sidecar)",
   "main": "dist/main.js",
   "author": "ciliverse",
-  "license": "Apache-2.0",
+  "license": "AGPL-3.0-only",
   "repository": {
     "type": "git",
     "url": "https://github.com/ciliverse/cilikube.git"

@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Backend-Go%201.26+-blue?style=flat-square&logo=go" alt="Go 1.26+">
   <img src="https://img.shields.io/badge/Backend-Gin-blue?style=flat-square&logo=gin" alt="Gin">
   <img src="https://img.shields.io/badge/Kubernetes-1.36.2-blue?style=flat-square&logo=kubernetes" alt="Kubernetes 1.36.2">
-  <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square" alt="License: Apache 2.0">
+  <img src="https://img.shields.io/badge/License-AGPL--3.0-red?style=flat-square" alt="License: AGPL-3.0">
   <img src="https://img.shields.io/github/stars/ciliverse/cilikube?style=social" alt="GitHub Stars">
   <img src="https://img.shields.io/github/forks/ciliverse/cilikube?style=social" alt="GitHub Forks">
 </div>
@@ -380,6 +380,6 @@ kubectl get svc cilikube -n cilikube
 
 ## 📜 许可证
 
-本项目基于 Apache 2.0 License 开源
+本项目基于 GNU Affero General Public License v3.0 开源。
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/License-AGPL--3.0-red.svg)](./LICENSE)

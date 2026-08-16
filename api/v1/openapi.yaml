@@ -10,8 +10,8 @@ info:
     email: cilliantech@gmail.com
     url: https://www.cillian.website
   license:
-    name: Apache 2.0
-    url: https://www.apache.org/licenses/LICENSE-2.0.html
+    name: GNU Affero General Public License v3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.html
 
 servers:
   - url: http://localhost:8080/api/v1
