@@ -8,6 +8,7 @@ import (
 	"github.com/ciliverse/cilikube/pkg/database"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // NewStore creates a new store instance based on configuration
@@ -58,6 +59,9 @@ func (s *DatabaseStore) Initialize() error {
 		&LoginAttempt{},
 		&UserSession{},
 		&TimelineStatusSample{},
+		&Environment{},
+		&AccessGrant{},
+		&RoleNavPolicy{},
 	); err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
@@ -524,4 +528,92 @@ func (s *DatabaseStore) DeleteUserSessions(userID uint) error {
 
 func (s *DatabaseStore) CleanupExpiredSessions(before time.Time) error {
 	return s.db.Where("expires_at < ? OR is_active = ?", before, false).Delete(&UserSession{}).Error
+}
+
+func (s *DatabaseStore) CreateEnvironment(env *Environment) error {
+	if env.ID == "" {
+		env.ID = uuid.New().String()
+	}
+	return s.db.Create(env).Error
+}
+
+func (s *DatabaseStore) GetEnvironmentByID(id string) (*Environment, error) {
+	var env Environment
+	if err := s.db.Where("id = ?", id).First(&env).Error; err != nil {
+		return nil, err
+	}
+	return &env, nil
+}
+
+func (s *DatabaseStore) GetEnvironmentByName(name string) (*Environment, error) {
+	var env Environment
+	if err := s.db.Where("name = ?", name).First(&env).Error; err != nil {
+		return nil, err
+	}
+	return &env, nil
+}
+
+func (s *DatabaseStore) ListEnvironments() ([]Environment, error) {
+	var list []Environment
+	err := s.db.Order("name ASC").Find(&list).Error
+	return list, err
+}
+
+func (s *DatabaseStore) UpdateEnvironment(env *Environment) error {
+	return s.db.Save(env).Error
+}
+
+func (s *DatabaseStore) DeleteEnvironment(id string) error {
+	return s.db.Where("id = ?", id).Delete(&Environment{}).Error
+}
+
+func (s *DatabaseStore) CreateAccessGrant(g *AccessGrant) error {
+	return s.db.Create(g).Error
+}
+
+func (s *DatabaseStore) GetAccessGrantByID(id uint) (*AccessGrant, error) {
+	var g AccessGrant
+	if err := s.db.First(&g, id).Error; err != nil {
+		return nil, err
+	}
+	return &g, nil
+}
+
+func (s *DatabaseStore) ListAccessGrants() ([]AccessGrant, error) {
+	var list []AccessGrant
+	err := s.db.Order("user_id ASC, cluster_id ASC").Find(&list).Error
+	return list, err
+}
+
+func (s *DatabaseStore) ListAccessGrantsByUser(userID uint) ([]AccessGrant, error) {
+	var list []AccessGrant
+	err := s.db.Where("user_id = ?", userID).Find(&list).Error
+	return list, err
+}
+
+func (s *DatabaseStore) DeleteAccessGrant(id uint) error {
+	return s.db.Delete(&AccessGrant{}, id).Error
+}
+
+func (s *DatabaseStore) ListRoleNavPolicies() ([]RoleNavPolicy, error) {
+	var list []RoleNavPolicy
+	err := s.db.Order("role_name ASC").Find(&list).Error
+	return list, err
+}
+
+func (s *DatabaseStore) GetRoleNavPolicies(roleNames []string) ([]RoleNavPolicy, error) {
+	if len(roleNames) == 0 {
+		return nil, nil
+	}
+	var list []RoleNavPolicy
+	err := s.db.Where("role_name IN ?", roleNames).Find(&list).Error
+	return list, err
+}
+
+func (s *DatabaseStore) UpsertRoleNavPolicy(p *RoleNavPolicy) error {
+	p.UpdatedAt = time.Now()
+	return s.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "role_name"}},
+		DoUpdates: clause.AssignmentColumns([]string{"hidden_groups", "hidden_items", "updated_at"}),
+	}).Create(p).Error
 }

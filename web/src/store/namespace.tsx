@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listNamespaces } from '@/api/cluster'
+import { getMyAccess } from '@/api/environment'
 import { useCluster } from './cluster'
 
 /** Empty string = all namespaces (cluster-wide list). */
@@ -34,11 +35,24 @@ export function NamespaceProvider({ children }: { children: ReactNode }) {
     return saved
   })
 
-  const { data = [], isLoading } = useQuery({
+  const { data: raw = [], isLoading } = useQuery({
     queryKey: ['namespaces', clusterId],
     queryFn: listNamespaces,
     enabled: Boolean(clusterId),
   })
+  const accessQ = useQuery({
+    queryKey: ['me-access'],
+    queryFn: getMyAccess,
+  })
+  const data = (() => {
+    const snap = accessQ.data
+    if (!snap || snap.unrestricted || !clusterId) return raw
+    const allowed = new Set(
+      snap.grants.filter((g) => g.cluster_id === clusterId).map((g) => g.namespace),
+    )
+    if (snap.grants.some((g) => g.cluster_id === clusterId && !g.namespace)) return raw
+    return raw.filter((ns) => allowed.has(ns))
+  })()
 
   useEffect(() => {
     if (!data.length) return

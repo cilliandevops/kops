@@ -138,7 +138,7 @@ export function AdminSettingsPage() {
   if (!isAdmin) {
     return (
       <div className="rounded border border-warn/40 bg-warn/10 px-5 py-8 text-sm text-warn">
-        Admin privileges required.
+        {t('adminSettings.adminRequired')}
       </div>
     )
   }
@@ -160,12 +160,12 @@ export function AdminSettingsPage() {
         body.github_client_secret = oauth.github_client_secret.trim()
       }
       await apiPut('/api/v1/settings/oauth', body)
-      setMsg('OAuth settings saved')
+      setMsg(t('adminSettings.oauthSaved'))
       setOauth((o) => ({ ...o, github_client_secret: '' }))
       await oauthQ.refetch()
       await systemQ.refetch()
     } catch (e: any) {
-      setErr(e?.message || 'Save failed')
+      setErr(e?.message || t('adminSettings.saveFailed'))
     } finally {
       setBusy(false)
     }
@@ -180,10 +180,10 @@ export function AdminSettingsPage() {
     setMsg('')
     try {
       await apiPut('/api/v1/settings/security', security)
-      setMsg('Security settings saved')
+      setMsg(t('adminSettings.securitySaved'))
       await securityQ.refetch()
     } catch (e: any) {
-      setErr(e?.message || 'Save failed')
+      setErr(e?.message || t('adminSettings.saveFailed'))
     } finally {
       setBusy(false)
     }
@@ -200,10 +200,10 @@ export function AdminSettingsPage() {
       // Apply immediately — server prefs alone do not drive the live UI
       switchTheme(nextTheme)
       setFontId(fontPref)
-      setMsg('Preferences saved — theme & font applied')
+      setMsg(t('adminSettings.preferencesSaved'))
       await prefsQ.refetch()
     } catch (e: any) {
-      setErr(e?.message || 'Save failed')
+      setErr(e?.message || t('adminSettings.saveFailed'))
     } finally {
       setBusy(false)
     }
@@ -222,12 +222,12 @@ export function AdminSettingsPage() {
       }
       if (ai.api_key.trim()) body.api_key = ai.api_key.trim()
       await apiPut('/api/v1/settings/ai', body)
-      setMsg('AI settings saved')
+      setMsg(t('adminSettings.aiSaved'))
       setAi((a) => ({ ...a, api_key: '' }))
       await aiQ.refetch()
       await systemQ.refetch()
     } catch (e: any) {
-      setErr(e?.message || 'Save failed')
+      setErr(e?.message || t('adminSettings.saveFailed'))
     } finally {
       setBusy(false)
     }
@@ -243,17 +243,18 @@ export function AdminSettingsPage() {
         url: prom.url.trim(),
         timeout: prom.timeout.trim() || '15s',
       })
-      setMsg('Prometheus settings saved')
+      setMsg(t('adminSettings.prometheusSaved'))
       await promQ.refetch()
       await systemQ.refetch()
     } catch (e: any) {
-      setErr(e?.message || 'Save failed')
+      setErr(e?.message || t('adminSettings.saveFailed'))
     } finally {
       setBusy(false)
     }
   }
 
   const sys = systemQ.data
+  const flagLabel = (on: unknown) => (on ? t('adminSettings.on') : t('adminSettings.off'))
   const promTone =
     prom.mode === 'showcase' || (prom.enabled && prom.url) ? 'ok' : prom.enabled ? 'warn' : 'neutral'
 
@@ -268,7 +269,9 @@ export function AdminSettingsPage() {
       ) : null}
 
       <Card className="space-y-2 p-5">
-        <h2 className="font-display text-lg font-bold tracking-[0.12em]">SYSTEM</h2>
+        <h2 className="font-display text-lg font-bold tracking-[0.12em]">
+          {t('adminSettings.sectionSystem')}
+        </h2>
         <div className="flex flex-wrap gap-2 text-sm">
           <Badge tone="accent">{formatAppVersion(sys?.version || APP_VERSION)}</Badge>
           <Badge tone="neutral">{sys?.environment || '—'}</Badge>
@@ -276,11 +279,13 @@ export function AdminSettingsPage() {
         </div>
         {sys?.features ? (
           <p className="text-xs text-text-dim">
-            OAuth {sys.features.oauth_enabled ? 'on' : 'off'} · RBAC{' '}
-            {sys.features.rbac_enabled ? 'on' : 'off'} · Audit{' '}
-            {sys.features.audit_log_enabled ? 'on' : 'off'} · AI{' '}
-            {sys.features.ai_enabled ? 'on' : 'off'} · Prometheus{' '}
-            {sys.features.prometheus_enabled ? 'on' : 'off'}
+            {t('adminSettings.featuresLine', {
+              oauth: flagLabel(sys.features.oauth_enabled),
+              rbac: flagLabel(sys.features.rbac_enabled),
+              audit: flagLabel(sys.features.audit_log_enabled),
+              ai: flagLabel(sys.features.ai_enabled),
+              prometheus: flagLabel(sys.features.prometheus_enabled),
+            })}
           </p>
         ) : null}
       </Card>
@@ -288,7 +293,9 @@ export function AdminSettingsPage() {
       <Card className="space-y-3 p-5">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="font-display text-lg font-bold tracking-[0.12em]">AI</h2>
-          <Badge tone={ai.ready ? 'ok' : 'warn'}>{ai.ready ? 'ready' : 'not ready'}</Badge>
+          <Badge tone={ai.ready ? 'ok' : 'warn'}>
+            {ai.ready ? t('adminSettings.ready') : t('adminSettings.notReady')}
+          </Badge>
         </div>
         <p className="text-xs text-text-dim">{t('adminPages.aiHint')}</p>
         <label className="flex items-center gap-2 text-sm">
@@ -297,22 +304,22 @@ export function AdminSettingsPage() {
             checked={ai.enabled}
             onChange={(e) => setAi((a) => ({ ...a, enabled: e.target.checked }))}
           />
-          Enable AI assistant
+          {t('adminSettings.enableAi')}
         </label>
         <div className="grid gap-3 md:grid-cols-2">
           <label className="block space-y-1">
-            <span className="hud-label">Provider</span>
+            <span className="hud-label">{t('adminSettings.provider')}</span>
             <select
               className="hud-field"
               value={ai.provider}
               onChange={(e) => setAi((a) => ({ ...a, provider: e.target.value }))}
             >
-              <option value="mock">mock (local demo)</option>
+              <option value="mock">{t('adminSettings.providerMock')}</option>
               <option value="openai">openai-compatible</option>
             </select>
           </label>
           <label className="block space-y-1">
-            <span className="hud-label">Model</span>
+            <span className="hud-label">{t('adminSettings.model')}</span>
             <input
               className="hud-field font-mono text-xs"
               value={ai.model}
@@ -321,7 +328,7 @@ export function AdminSettingsPage() {
             />
           </label>
           <label className="block space-y-1 md:col-span-2">
-            <span className="hud-label">Base URL (optional)</span>
+            <span className="hud-label">{t('adminSettings.baseUrlOptional')}</span>
             <input
               className="hud-field font-mono text-xs"
               value={ai.base_url}
@@ -331,7 +338,7 @@ export function AdminSettingsPage() {
           </label>
           <label className="block space-y-1 md:col-span-2">
             <span className="hud-label">
-              API Key{ai.api_key_set ? ' (set — leave blank to keep)' : ''}
+              API Key{ai.api_key_set ? t('adminSettings.secretSetSuffix') : ''}
             </span>
             <input
               type="password"
@@ -344,7 +351,7 @@ export function AdminSettingsPage() {
           </label>
         </div>
         <Button disabled={busy} onClick={() => void saveAi()}>
-          Save AI
+          {t('adminSettings.saveAi')}
         </Button>
       </Card>
 
@@ -365,7 +372,7 @@ export function AdminSettingsPage() {
             checked={prom.enabled}
             onChange={(e) => setProm((p) => ({ ...p, enabled: e.target.checked }))}
           />
-          Enable remote Prometheus
+          {t('adminSettings.enableRemoteProm')}
         </label>
         <div className="grid gap-3 md:grid-cols-2">
           <label className="block space-y-1 md:col-span-2">
@@ -378,7 +385,7 @@ export function AdminSettingsPage() {
             />
           </label>
           <label className="block space-y-1">
-            <span className="hud-label">Timeout</span>
+            <span className="hud-label">{t('adminSettings.timeout')}</span>
             <input
               className="hud-field font-mono text-xs"
               value={prom.timeout}
@@ -388,7 +395,7 @@ export function AdminSettingsPage() {
           </label>
         </div>
         <Button disabled={busy} onClick={() => void saveProm()}>
-          Save Prometheus
+          {t('adminSettings.saveProm')}
         </Button>
       </Card>
 
@@ -396,7 +403,11 @@ export function AdminSettingsPage() {
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="font-display text-lg font-bold tracking-[0.12em]">OAUTH</h2>
           <Badge tone={oauthLoginReady ? 'ok' : oauth.github_enabled ? 'warn' : 'neutral'}>
-            {oauthLoginReady ? 'login ready' : oauth.github_enabled ? 'needs client id' : 'off'}
+            {oauthLoginReady
+              ? t('adminSettings.oauthLoginReady')
+              : oauth.github_enabled
+                ? t('adminSettings.oauthNeedsClientId')
+                : t('adminSettings.off')}
           </Badge>
         </div>
         <label className="flex items-center gap-2 text-sm">
@@ -405,12 +416,11 @@ export function AdminSettingsPage() {
             checked={oauth.github_enabled}
             onChange={(e) => setOauth((o) => ({ ...o, github_enabled: e.target.checked }))}
           />
-          GitHub login enabled
+          {t('adminSettings.githubLoginEnabled')}
         </label>
         {oauth.github_enabled && !oauth.github_client_id.trim() ? (
           <div className="rounded border border-warn/40 bg-warn/10 px-3 py-2 text-xs text-warn">
-            Enabled without Client ID — the login page will not show a GitHub button until credentials
-            are saved.
+            {t('adminSettings.githubMissingClientId')}
           </div>
         ) : null}
         <div className="grid gap-3 md:grid-cols-2">
@@ -426,7 +436,8 @@ export function AdminSettingsPage() {
           </label>
           <label className="block space-y-1">
             <span className="hud-label">
-              GitHub Client Secret{oauth.github_secret_set ? ' (set — leave blank to keep)' : ''}
+              GitHub Client Secret
+              {oauth.github_secret_set ? t('adminSettings.secretSetSuffix') : ''}
             </span>
             <input
               type="password"
@@ -439,7 +450,7 @@ export function AdminSettingsPage() {
           </label>
         </div>
         <label className="block space-y-1">
-          <span className="hud-label">Redirect URL (must match GitHub App callback)</span>
+          <span className="hud-label">{t('adminSettings.redirectUrl')}</span>
           <input
             className="hud-field font-mono text-xs"
             value={oauth.github_redirect_url}
@@ -453,12 +464,11 @@ export function AdminSettingsPage() {
             checked={oauth.allow_registration}
             onChange={(e) => setOauth((o) => ({ ...o, allow_registration: e.target.checked }))}
           />
-          Allow registration (OAuth first login + username/password register)
+          {t('adminSettings.allowRegistration')}
         </label>
         <p className="text-xs text-text-dim">
-          New OAuth users always get the <span className="text-warn">viewer</span> role. Promote them
-          in Admin → Users, or link GitHub to an existing admin from Profile (emails must match for
-          auto-link).
+          {t('adminSettings.newOauthUserPrefix')} <span className="text-warn">viewer</span>{' '}
+          {t('adminSettings.newOauthUserSuffix')}
         </p>
         <label className="flex items-center gap-2 text-sm">
           <input
@@ -466,19 +476,21 @@ export function AdminSettingsPage() {
             checked={oauth.auto_link_accounts}
             onChange={(e) => setOauth((o) => ({ ...o, auto_link_accounts: e.target.checked }))}
           />
-          Auto-link accounts by email
+          {t('adminSettings.autoLinkAccounts')}
         </label>
         <Button type="button" disabled={busy} onClick={() => void saveOauth()}>
-          Save OAuth
+          {t('adminSettings.saveOauth')}
         </Button>
       </Card>
 
       {security ? (
         <Card className="space-y-3 p-5">
-          <h2 className="font-display text-lg font-bold tracking-[0.12em]">SECURITY</h2>
+          <h2 className="font-display text-lg font-bold tracking-[0.12em]">
+            {t('adminSettings.sectionSecurity')}
+          </h2>
           <div className="grid gap-3 md:grid-cols-3">
             <label className="block space-y-1">
-              <span className="hud-label">Min password length</span>
+              <span className="hud-label">{t('adminSettings.minPasswordLength')}</span>
               <input
                 type="number"
                 className="hud-field"
@@ -495,7 +507,7 @@ export function AdminSettingsPage() {
               />
             </label>
             <label className="block space-y-1">
-              <span className="hud-label">Session timeout (s)</span>
+              <span className="hud-label">{t('adminSettings.sessionTimeout')}</span>
               <input
                 type="number"
                 className="hud-field"
@@ -512,7 +524,7 @@ export function AdminSettingsPage() {
               />
             </label>
             <label className="block space-y-1">
-              <span className="hud-label">Audit retention (days)</span>
+              <span className="hud-label">{t('adminSettings.auditRetention')}</span>
               <input
                 type="number"
                 className="hud-field"
@@ -532,12 +544,12 @@ export function AdminSettingsPage() {
           <div className="flex flex-wrap gap-4 text-sm">
             {(
               [
-                ['require_uppercase', 'Uppercase'],
-                ['require_lowercase', 'Lowercase'],
-                ['require_numbers', 'Numbers'],
-                ['require_symbols', 'Symbols'],
+                ['require_uppercase', 'adminSettings.pwUppercase'],
+                ['require_lowercase', 'adminSettings.pwLowercase'],
+                ['require_numbers', 'adminSettings.pwNumbers'],
+                ['require_symbols', 'adminSettings.pwSymbols'],
               ] as const
-            ).map(([key, label]) => (
+            ).map(([key, labelKey]) => (
               <label key={key} className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -549,18 +561,18 @@ export function AdminSettingsPage() {
                     }))
                   }
                 />
-                {label}
+                {t(labelKey)}
               </label>
             ))}
           </div>
           <div className="flex flex-wrap gap-4 text-sm">
             {(
               [
-                ['log_login_attempts', 'Log logins'],
-                ['log_api_calls', 'Log API calls'],
-                ['log_admin_actions', 'Log admin actions'],
+                ['log_login_attempts', 'adminSettings.logLogins'],
+                ['log_api_calls', 'adminSettings.logApiCalls'],
+                ['log_admin_actions', 'adminSettings.logAdminActions'],
               ] as const
-            ).map(([key, label]) => (
+            ).map(([key, labelKey]) => (
               <label key={key} className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -572,22 +584,24 @@ export function AdminSettingsPage() {
                     }))
                   }
                 />
-                {label}
+                {t(labelKey)}
               </label>
             ))}
           </div>
           <Button type="button" disabled={busy} onClick={() => void saveSecurity()}>
-            Save security
+            {t('adminSettings.saveSecurity')}
           </Button>
         </Card>
       ) : null}
 
       {prefs ? (
         <Card className="space-y-3 p-5">
-          <h2 className="font-display text-lg font-bold tracking-[0.12em]">PREFERENCES</h2>
+          <h2 className="font-display text-lg font-bold tracking-[0.12em]">
+            {t('adminSettings.sectionPreferences')}
+          </h2>
           <div className="grid gap-3 md:grid-cols-3">
             <label className="block space-y-1">
-              <span className="hud-label">Theme</span>
+              <span className="hud-label">{t('userMenu.theme')}</span>
               <select
                 className="hud-field"
                 value={prefs.ui_settings?.default_theme || themeId || 'paper'}
@@ -600,18 +614,16 @@ export function AdminSettingsPage() {
                   switchTheme(id)
                 }}
               >
-                {BUILTIN_THEMES.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.mode})
+                {BUILTIN_THEMES.map((theme) => (
+                  <option key={theme.id} value={theme.id}>
+                    {theme.name} ({theme.mode})
                   </option>
                 ))}
               </select>
-              <p className="text-[10px] text-text-dim">
-                Applies now; Save also persists as the server default.
-              </p>
+              <p className="text-[10px] text-text-dim">{t('adminSettings.themeHint')}</p>
             </label>
             <label className="block space-y-1">
-              <span className="hud-label">Font</span>
+              <span className="hud-label">{t('userMenu.font')}</span>
               <select
                 className="hud-field"
                 value={fontPref}
@@ -626,13 +638,10 @@ export function AdminSettingsPage() {
                   </option>
                 ))}
               </select>
-              <p className="text-[10px] text-text-dim">
-                Default: Latin Maple (~75KB) + system CJK. Maple Mono CN loads subset fonts from this
-                site on demand (no third-party CDN).
-              </p>
+              <p className="text-[10px] text-text-dim">{t('adminSettings.fontHint')}</p>
             </label>
             <label className="block space-y-1">
-              <span className="hud-label">Default language</span>
+              <span className="hud-label">{t('adminSettings.defaultLanguage')}</span>
               <input
                 className="hud-field"
                 value={prefs.ui_settings?.default_language || ''}
@@ -645,7 +654,7 @@ export function AdminSettingsPage() {
               />
             </label>
             <label className="block space-y-1">
-              <span className="hud-label">Items per page</span>
+              <span className="hud-label">{t('adminSettings.itemsPerPage')}</span>
               <input
                 type="number"
                 className="hud-field"
@@ -674,7 +683,7 @@ export function AdminSettingsPage() {
                   }))
                 }
               />
-              Auto refresh
+              {t('adminSettings.autoRefresh')}
             </label>
             <label className="flex items-center gap-2">
               <input
@@ -687,7 +696,7 @@ export function AdminSettingsPage() {
                   }))
                 }
               />
-              Advanced metrics
+              {t('adminSettings.advancedMetrics')}
             </label>
             <label className="flex items-center gap-2">
               <input
@@ -700,11 +709,11 @@ export function AdminSettingsPage() {
                   }))
                 }
               />
-              Beta features
+              {t('adminSettings.betaFeatures')}
             </label>
           </div>
           <Button type="button" disabled={busy} onClick={() => void savePrefs()}>
-            Save preferences
+            {t('adminSettings.savePreferences')}
           </Button>
         </Card>
       ) : null}

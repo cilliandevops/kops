@@ -33,6 +33,10 @@ export function ClustersPage() {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [kubeconfig, setKubeconfig] = useState('')
+  const [createMode, setCreateMode] = useState<'kubeconfig' | 'token'>('kubeconfig')
+  const [server, setServer] = useState('')
+  const [token, setToken] = useState('')
+  const [insecure, setInsecure] = useState(false)
   const [err, setErr] = useState('')
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
@@ -60,8 +64,16 @@ export function ClustersPage() {
   const isEmpty = !q.isLoading && clusters.length === 0
 
   const create = async () => {
-    if (!name.trim() || !kubeconfig.trim()) {
+    if (!name.trim()) {
+      setErr(t('clusters.nameRequired'))
+      return
+    }
+    if (createMode === 'kubeconfig' && !kubeconfig.trim()) {
       setErr(t('clusters.kubeRequired'))
+      return
+    }
+    if (createMode === 'token' && (!server.trim() || !token.trim())) {
+      setErr(t('clusters.tokenRequired'))
       return
     }
     setBusy(true)
@@ -71,11 +83,15 @@ export function ClustersPage() {
       await apiPost('/api/v1/clusters', {
         name: name.trim(),
         description: description.trim() || undefined,
-        kubeconfigData: btoa(unescape(encodeURIComponent(kubeconfig))),
+        ...(createMode === 'token'
+          ? { server: server.trim(), token: token.trim(), insecure }
+          : { kubeconfigData: btoa(unescape(encodeURIComponent(kubeconfig))) }),
       })
       setName('')
       setDescription('')
       setKubeconfig('')
+      setServer('')
+      setToken('')
       setMsg(t('clusters.created'))
       await q.refetch()
       void queryClient.invalidateQueries({ queryKey: ['clusters'] })
@@ -393,6 +409,24 @@ export function ClustersPage() {
           <h2 className="font-display text-lg font-bold tracking-[0.12em]">
             {t('clusters.createTitle')}
           </h2>
+          <div className="flex gap-2 text-xs">
+            <Button
+              type="button"
+              variant={createMode === 'kubeconfig' ? 'primary' : 'outline'}
+              className="px-3 py-1"
+              onClick={() => setCreateMode('kubeconfig')}
+            >
+              {t('clusters.modeKube')}
+            </Button>
+            <Button
+              type="button"
+              variant={createMode === 'token' ? 'primary' : 'outline'}
+              className="px-3 py-1"
+              onClick={() => setCreateMode('token')}
+            >
+              {t('clusters.modeToken')}
+            </Button>
+          </div>
           <label className="block space-y-1">
             <span className="hud-label">{t('common.name')}</span>
             <input className="hud-field" value={name} onChange={(e) => setName(e.target.value)} />
@@ -405,6 +439,7 @@ export function ClustersPage() {
               onChange={(e) => setDescription(e.target.value)}
             />
           </label>
+          {createMode === 'kubeconfig' ? (
           <label className="block space-y-1">
             <span className="hud-label">{t('clusters.kubeconfig')}</span>
             <textarea
@@ -414,6 +449,31 @@ export function ClustersPage() {
               placeholder={t('clusters.kubeconfig')}
             />
           </label>
+          ) : (
+            <>
+              <label className="block space-y-1">
+                <span className="hud-label">{t('clusters.serverUrl')}</span>
+                <input
+                  className="hud-field font-mono text-xs"
+                  value={server}
+                  onChange={(e) => setServer(e.target.value)}
+                  placeholder="https://127.0.0.1:6443"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="hud-label">{t('clusters.token')}</span>
+                <textarea
+                  className="hud-field min-h-[80px] font-mono text-xs"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                />
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={insecure} onChange={(e) => setInsecure(e.target.checked)} />
+                {t('clusters.insecure')}
+              </label>
+            </>
+          )}
           <Button type="button" disabled={busy} onClick={() => void create()}>
             {t('clusters.create')}
           </Button>

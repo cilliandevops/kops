@@ -24,9 +24,13 @@ func InitializeServices(k8sManager *k8s.ClusterManager, store store.Store, cfg *
 	auditService := service.NewAuditService(store, cfg)
 	appServices := &service.AppServices{
 		ClusterService:     service.NewClusterService(k8sManager, cfg.Kubernetes.Kubeconfig),
+		EnvironmentService: service.NewEnvironmentService(store),
+		AccessService:      service.NewAccessService(store),
+		ApplicationService: service.NewApplicationService(),
 		InstallerService:   service.NewInstallerService(cfg),
 		NodeMetricsService: service.NewNodeMetricsService(),
 		PodMetricsService:  service.NewPodMetricsService(),
+		NodeOpsService:     service.NewNodeOpsService(),
 		PodLogsService:     service.NewPodLogsService(),
 		SummaryService:     service.NewSummaryService(),
 		EventService:       service.NewEventService(k8sManager),
@@ -38,6 +42,7 @@ func InitializeServices(k8sManager *k8s.ClusterManager, store store.Store, cfg *
 		MonitoringService:  service.NewMonitoringService(store, cfg, auditService),
 		PrometheusService:  service.NewPrometheusService(cfg),
 	}
+	appServices.NavPolicyService = service.NewNavPolicyService(store, appServices.RoleService)
 	appServices.TopologyService = service.NewTopologyService(appServices.PrometheusService)
 	appServices.TimelineService = service.NewTimelineService(k8sManager, appServices.EventService)
 	appServices.TimelineService.Start()
@@ -73,6 +78,26 @@ func InitializeServices(k8sManager *k8s.ClusterManager, store store.Store, cfg *
 	initializeResourceService(resourceFactory, "poddisruptionbudgets", &appServices.PDBService)
 	initializeResourceService(resourceFactory, "resourcequotas", &appServices.ResourceQuotaService)
 	initializeResourceService(resourceFactory, "limitranges", &appServices.LimitRangeService)
+	initializeResourceService(resourceFactory, "replicasets", &appServices.ReplicaSetService)
+	initializeResourceService(resourceFactory, "replicationcontrollers", &appServices.ReplicationControllerService)
+	initializeResourceService(resourceFactory, "endpoints", &appServices.EndpointsService)
+	initializeResourceService(resourceFactory, "endpointslices", &appServices.EndpointSliceService)
+	initializeResourceService(resourceFactory, "leases", &appServices.LeaseService)
+	initializeResourceService(resourceFactory, "podtemplates", &appServices.PodTemplateService)
+	initializeResourceService(resourceFactory, "ingressclasses", &appServices.IngressClassService)
+	initializeResourceService(resourceFactory, "servicecidrs", &appServices.ServiceCIDRService)
+	initializeResourceService(resourceFactory, "priorityclasses", &appServices.PriorityClassService)
+	initializeResourceService(resourceFactory, "runtimeclasses", &appServices.RuntimeClassService)
+	initializeResourceService(resourceFactory, "mutatingwebhookconfigurations", &appServices.MutatingWebhookConfigurationService)
+	initializeResourceService(resourceFactory, "validatingwebhookconfigurations", &appServices.ValidatingWebhookConfigurationService)
+	initializeResourceService(resourceFactory, "volumeattachments", &appServices.VolumeAttachmentService)
+	initializeResourceService(resourceFactory, "csidrivers", &appServices.CSIDriverService)
+	initializeResourceService(resourceFactory, "csinodes", &appServices.CSINodeService)
+	if appServices.AccessService != nil {
+		k8s.SetClusterAccessChecker(func(c *gin.Context, clusterID, namespace string) bool {
+			return appServices.AccessService.DecisionFromContext(c).AllowsNamespace(clusterID, namespace)
+		})
+	}
 	return appServices
 }
 
@@ -94,9 +119,21 @@ func InitializeHandlers(router *gin.RouterGroup, services *service.AppServices, 
 	adminGroup := router.Group("/admin")
 	routes.RegisterUserManagementRoutes(adminGroup, services.AuthService, services.RoleService)
 	routes.RegisterRoleManagementRoutes(adminGroup, services.RoleService)
+	if services.NavPolicyService != nil {
+		routes.RegisterNavPolicyRoutes(router, adminGroup, services.NavPolicyService, services.RoleService)
+	}
 	routes.RegisterSystemSettingsRoutes(router, cfg)
 	routes.RegisterAIRoutes(router, cfg, k8sManager)
-	routes.RegisterClusterRoutes(router, handlers.NewClusterHandler(services.ClusterService))
+	routes.RegisterClusterRoutes(router, handlers.NewClusterHandler(services.ClusterService, services.AccessService))
+	if services.EnvironmentService != nil && services.AccessService != nil {
+		routes.RegisterEnvironmentRoutes(router, handlers.NewEnvironmentHandler(services.EnvironmentService, services.AccessService))
+	}
+	if services.ApplicationService != nil {
+		routes.RegisterApplicationRoutes(router, handlers.NewApplicationHandler(services.ApplicationService, k8sManager))
+	}
+	if services.AccessService != nil {
+		routes.RegisterAccessRoutes(router, adminGroup, handlers.NewAccessHandler(services.AccessService))
+	}
 	routes.RegisterInstallerRoutes(router, handlers.NewInstallerHandler(services.InstallerService))
 	routes.KubernetesProxyRoutes(router, handlers.NewProxyHandler(k8sManager))
 
@@ -161,6 +198,7 @@ func InitializeHandlers(router *gin.RouterGroup, services *service.AppServices, 
 	clusterRoleHandler := handlers.NewResourceHandler(services.ClusterRoleService, k8sManager, "clusterroles")
 	clusterRoleBindingHandler := handlers.NewResourceHandler(services.ClusterRoleBindingService, k8sManager, "clusterrolebindings")
 	nodeMetricsHandler := handlers.NewNodeMetricsHandler(services.NodeMetricsService, k8sManager)
+	nodeOpsHandler := handlers.NewNodeOpsHandler(services.NodeOpsService, k8sManager)
 	podMetricsHandler := handlers.NewPodMetricsHandler(services.PodMetricsService, k8sManager)
 
 	// Pod logs and terminal Handler
@@ -171,6 +209,21 @@ func InitializeHandlers(router *gin.RouterGroup, services *service.AppServices, 
 	pdbHandler := handlers.NewResourceHandler(services.PDBService, k8sManager, "poddisruptionbudgets")
 	resourceQuotaHandler := handlers.NewResourceHandler(services.ResourceQuotaService, k8sManager, "resourcequotas")
 	limitRangeHandler := handlers.NewResourceHandler(services.LimitRangeService, k8sManager, "limitranges")
+	replicaSetHandler := handlers.NewResourceHandler(services.ReplicaSetService, k8sManager, "replicasets")
+	replicationControllerHandler := handlers.NewResourceHandler(services.ReplicationControllerService, k8sManager, "replicationcontrollers")
+	endpointsHandler := handlers.NewResourceHandler(services.EndpointsService, k8sManager, "endpoints")
+	endpointSliceHandler := handlers.NewResourceHandler(services.EndpointSliceService, k8sManager, "endpointslices")
+	leaseHandler := handlers.NewResourceHandler(services.LeaseService, k8sManager, "leases")
+	podTemplateHandler := handlers.NewResourceHandler(services.PodTemplateService, k8sManager, "podtemplates")
+	ingressClassHandler := handlers.NewResourceHandler(services.IngressClassService, k8sManager, "ingressclasses")
+	serviceCIDRHandler := handlers.NewResourceHandler(services.ServiceCIDRService, k8sManager, "servicecidrs")
+	priorityClassHandler := handlers.NewResourceHandler(services.PriorityClassService, k8sManager, "priorityclasses")
+	runtimeClassHandler := handlers.NewResourceHandler(services.RuntimeClassService, k8sManager, "runtimeclasses")
+	mutatingWebhookHandler := handlers.NewResourceHandler(services.MutatingWebhookConfigurationService, k8sManager, "mutatingwebhookconfigurations")
+	validatingWebhookHandler := handlers.NewResourceHandler(services.ValidatingWebhookConfigurationService, k8sManager, "validatingwebhookconfigurations")
+	volumeAttachmentHandler := handlers.NewResourceHandler(services.VolumeAttachmentService, k8sManager, "volumeattachments")
+	csiDriverHandler := handlers.NewResourceHandler(services.CSIDriverService, k8sManager, "csidrivers")
+	csiNodeHandler := handlers.NewResourceHandler(services.CSINodeService, k8sManager, "csinodes")
 	helmHandler := handlers.NewHelmHandler(services.HelmService, k8sManager)
 
 	// a. Cluster-scoped resources
@@ -189,6 +242,12 @@ func InitializeHandlers(router *gin.RouterGroup, services *service.AppServices, 
 			nodeMemberRoutes.GET("/watch", nodesHandler.Watch)
 			// Register metrics sub-routes for individual node
 			nodeMemberRoutes.GET("/metrics", nodeMetricsHandler.GetNodeMetrics)
+			// Node lifecycle operations
+			nodeMemberRoutes.POST("/cordon", nodeOpsHandler.Cordon)
+			nodeMemberRoutes.POST("/uncordon", nodeOpsHandler.Uncordon)
+			nodeMemberRoutes.POST("/drain", nodeOpsHandler.Drain)
+			nodeMemberRoutes.PUT("/taints", nodeOpsHandler.UpdateTaints)
+			nodeMemberRoutes.PUT("/meta", nodeOpsHandler.UpdateMeta)
 		}
 	}
 
@@ -206,6 +265,15 @@ func InitializeHandlers(router *gin.RouterGroup, services *service.AppServices, 
 	registerClusterScopedResource(router, "gatewayclasses", gatewayClassesHandler)
 	registerClusterScopedResource(router, "clusterroles", clusterRoleHandler)
 	registerClusterScopedResource(router, "clusterrolebindings", clusterRoleBindingHandler)
+	registerClusterScopedResource(router, "ingressclasses", ingressClassHandler)
+	registerClusterScopedResource(router, "servicecidrs", serviceCIDRHandler)
+	registerClusterScopedResource(router, "priorityclasses", priorityClassHandler)
+	registerClusterScopedResource(router, "runtimeclasses", runtimeClassHandler)
+	registerClusterScopedResource(router, "mutatingwebhookconfigurations", mutatingWebhookHandler)
+	registerClusterScopedResource(router, "validatingwebhookconfigurations", validatingWebhookHandler)
+	registerClusterScopedResource(router, "volumeattachments", volumeAttachmentHandler)
+	registerClusterScopedResource(router, "csidrivers", csiDriverHandler)
+	registerClusterScopedResource(router, "csinodes", csiNodeHandler)
 
 	// Cluster-wide list (all namespaces) — empty namespace in client-go lists all.
 	// Used by UI "All namespaces" selector. Create/Get/Update remain under /namespaces/:ns/...
@@ -232,6 +300,12 @@ func InitializeHandlers(router *gin.RouterGroup, services *service.AppServices, 
 	registerNamespacedResourceClusterList(router, "poddisruptionbudgets", pdbHandler)
 	registerNamespacedResourceClusterList(router, "resourcequotas", resourceQuotaHandler)
 	registerNamespacedResourceClusterList(router, "limitranges", limitRangeHandler)
+	registerNamespacedResourceClusterList(router, "replicasets", replicaSetHandler)
+	registerNamespacedResourceClusterList(router, "replicationcontrollers", replicationControllerHandler)
+	registerNamespacedResourceClusterList(router, "endpoints", endpointsHandler)
+	registerNamespacedResourceClusterList(router, "endpointslices", endpointSliceHandler)
+	registerNamespacedResourceClusterList(router, "leases", leaseHandler)
+	registerNamespacedResourceClusterList(router, "podtemplates", podTemplateHandler)
 
 	// Helm releases (requires helm CLI on API host)
 	helmRoutes := router.Group("/helm")
@@ -242,6 +316,15 @@ func InitializeHandlers(router *gin.RouterGroup, services *service.AppServices, 
 		helmRoutes.PUT("/releases/:namespace/:name", helmHandler.UpgradeRelease)
 		helmRoutes.POST("/releases/:namespace/:name/rollback", helmHandler.RollbackRelease)
 		helmRoutes.DELETE("/releases/:namespace/:name", helmHandler.UninstallRelease)
+
+		// Catalog: repository and chart metadata is host-level, so these need no
+		// cluster and serve the marketplace before any cluster is connected.
+		helmRoutes.GET("/repos", helmHandler.ListRepos)
+		helmRoutes.POST("/repos", helmHandler.AddRepo)
+		helmRoutes.POST("/repos/update", helmHandler.UpdateRepos)
+		helmRoutes.DELETE("/repos/:name", helmHandler.RemoveRepo)
+		helmRoutes.GET("/charts", helmHandler.ListCharts)
+		helmRoutes.GET("/chart", helmHandler.GetChart)
 	}
 
 	// b. Namespace resources themselves, and all resources nested under them
@@ -279,6 +362,12 @@ func InitializeHandlers(router *gin.RouterGroup, services *service.AppServices, 
 			registerResourceInNamespace(nsMemberRoutes, "poddisruptionbudgets", pdbHandler)
 			registerResourceInNamespace(nsMemberRoutes, "resourcequotas", resourceQuotaHandler)
 			registerResourceInNamespace(nsMemberRoutes, "limitranges", limitRangeHandler)
+			registerResourceInNamespace(nsMemberRoutes, "replicasets", replicaSetHandler)
+			registerResourceInNamespace(nsMemberRoutes, "replicationcontrollers", replicationControllerHandler)
+			registerResourceInNamespace(nsMemberRoutes, "endpoints", endpointsHandler)
+			registerResourceInNamespace(nsMemberRoutes, "endpointslices", endpointSliceHandler)
+			registerResourceInNamespace(nsMemberRoutes, "leases", leaseHandler)
+			registerResourceInNamespace(nsMemberRoutes, "podtemplates", podTemplateHandler)
 
 			// Pod logs, terminal, attach, port-forward
 			podsMemberRoutes := nsMemberRoutes.Group("/pods/:name")

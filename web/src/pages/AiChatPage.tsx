@@ -4,11 +4,13 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
-  Bot,
+  Activity,
+  Boxes,
   History,
   Loader2,
   MessageSquarePlus,
   PanelLeftClose,
+  Search,
   Terminal,
   X,
   Zap,
@@ -32,7 +34,6 @@ import {
 } from '@/lib/aiSessions'
 import {
   allAiSkills,
-  defaultAiAgent,
   deleteCustomSkill,
   upsertCustomSkill,
   type AiSkillDef,
@@ -155,7 +156,6 @@ export function AiChatPage() {
   const fleetTourRunningRef = useRef(false)
 
   const ready = Boolean(statusQ.data?.ready)
-  const clusterLabel = activeCluster?.name || clusterId || '—'
   const isEmpty = messages.length === 0
 
   const refreshSessions = useCallback(() => setSessions(listAiSessions()), [])
@@ -211,7 +211,7 @@ export function AiChatPage() {
           ? buildFleetFocusPrompt(fleet.clusterName, focus, lang)
           : buildFleetInspectPrompt(fleet.clusterName, lang),
         titleHint: focus
-          ? `${fleet.clusterName} · ${focus === 'unhealthy' ? t('ai.unhealthyPods') : 'Warning'}`
+          ? `${fleet.clusterName} · ${focus === 'unhealthy' ? t('ai.unhealthyPods') : t('fleet.warnings')}`
           : fleet.clusterName,
         auto,
         clusterId: fleet.clusterId,
@@ -595,6 +595,8 @@ export function AiChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot tour kickoff
   }, [ready, statusQ.isLoading, statusQ.isError, isDesktop, hydrateSession, refreshSessions, switchCluster])
 
+  const startSkills = useMemo(() => skills.filter((s) => s.group === 'combo').slice(0, 3), [skills])
+
   const composer = (
     <AiComposer
       value={input}
@@ -605,12 +607,9 @@ export function AiChatPage() {
       onStop={stop}
       busy={busy}
       ready={ready}
-      namespaceLabel={namespace === 'all' ? t('common.allNamespaces') : namespace}
-      clusterLabel={clusterLabel}
       err={err}
       evidence={evidence}
       skills={skills}
-      agent={defaultAiAgent(lang)}
       landing={isEmpty}
       onSaveCustomSkill={(input) => {
         const saved = upsertCustomSkill(input, lang)
@@ -626,10 +625,7 @@ export function AiChatPage() {
   const historyRail = (onClose?: () => void) => (
     <div className="ai-ops-rail">
       <div className="ai-ops-rail-head">
-        <div>
-          <div className="ai-ops-kicker">{t('ai.history')}</div>
-          <div className="ai-ops-rail-title">{t('ai.chats')}</div>
-        </div>
+        <div className="ai-ops-rail-title">{t('ai.chats')}</div>
         <div className="ai-ops-rail-actions">
           <button type="button" className="ai-ops-icon-btn" onClick={startNew} title={t('ai.newChat')}>
             <MessageSquarePlus className="h-4 w-4" />
@@ -723,32 +719,15 @@ export function AiChatPage() {
 
       <section className="ai-ops-stage">
         <div className="ai-ops-toolbar">
-          <div className="ai-ops-toolbar-left">
-            <button
-              type="button"
-              className="ai-ops-icon-btn ai-ops-history-btn"
-              onClick={toggleHistory}
-              aria-label={historyOpen ? t('ai.closeHistory') : t('ai.openHistory')}
-              aria-expanded={historyOpen}
-            >
-              {historyOpen && isDesktop ? <PanelLeftClose className="h-4 w-4" /> : <History className="h-4 w-4" />}
-            </button>
-          </div>
-          <div className="ai-ops-toolbar-center">
-            <span className={cn('ai-ops-status', ready ? 'is-on' : 'is-off')}>
-              <i />
-              {ready ? t('ai.online') : t('ai.offline')}
-            </span>
-            <span className="ai-ops-cluster" title={clusterLabel}>
-              {clusterLabel}
-            </span>
-          </div>
-          <div className="ai-ops-toolbar-right">
-            <Link to="/fleet" className="ai-ops-console-btn">
-              <Terminal className="h-3.5 w-3.5" />
-              {t('ai.console')}
-            </Link>
-          </div>
+          <button
+            type="button"
+            className="ai-ops-icon-btn ai-ops-history-btn"
+            onClick={toggleHistory}
+            aria-label={historyOpen ? t('ai.closeHistory') : t('ai.openHistory')}
+            aria-expanded={historyOpen}
+          >
+            {historyOpen && isDesktop ? <PanelLeftClose className="h-4 w-4" /> : <History className="h-4 w-4" />}
+          </button>
         </div>
 
         {!ready ? (
@@ -756,21 +735,39 @@ export function AiChatPage() {
         ) : null}
 
         {isEmpty ? (
-          <div className="ai-ops-landing">
-            <motion.div
-              className="ai-ops-stage-core"
-              initial={skipMotion ? false : { opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              <BrandTitle skipMotion={skipMotion} />
-              <h2 className="ai-ops-hero-title">
-                {t('ai.heroTitle')}
-                <em>{t('ai.heroTitleEm')}</em>
-              </h2>
-              <p className="ai-ops-hero-sub">{t('ai.heroSub')}</p>
-              <div className="ai-ops-landing-composer">{composer}</div>
-            </motion.div>
+          <div className="ai-ops-empty">
+            <div className="ai-ops-empty-core">
+              <h2 className="ai-ops-hero-title">{t('ai.heroTitle')}</h2>
+              <p className="ai-ops-start-lead">{t('ai.heroSub')}</p>
+              <div className="ai-ops-start-list">
+                {startSkills.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className="ai-ops-start-item"
+                    disabled={busy || !ready}
+                    onClick={() => {
+                      void send(s.prompt, s.id)
+                    }}
+                  >
+                    <span className="ai-ops-start-icon" aria-hidden>
+                      {s.id === 'skill_inspect_combo' ? (
+                        <Activity className="h-4 w-4" />
+                      ) : s.id === 'skill_triage_combo' ? (
+                        <Search className="h-4 w-4" />
+                      ) : (
+                        <Boxes className="h-4 w-4" />
+                      )}
+                    </span>
+                    <span className="ai-ops-start-copy">
+                      <span className="ai-ops-start-label">{s.label}</span>
+                      <span className="ai-ops-start-blurb">{s.blurb}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+              {composer}
+            </div>
           </div>
         ) : (
           <>
@@ -794,64 +791,11 @@ export function AiChatPage() {
   )
 }
 
-function BrandTitle({ skipMotion }: { skipMotion: boolean }) {
-  const brand = 'CILIKUBE'
-  return (
-    <div className="ai-ops-brand">
-      <div className="ai-ops-brand-row" aria-label="CiliKube AI">
-        <span className="ai-ops-brand-main">
-          {brand.split('').map((ch, i) => (
-            <motion.span
-              key={`${ch}-${i}`}
-              className="ai-ops-brand-letter"
-              initial={skipMotion ? false : { opacity: 0, y: 18, filter: 'blur(6px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              transition={{
-                delay: skipMotion ? 0 : 0.04 * i,
-                duration: 0.4,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
-              {ch}
-            </motion.span>
-          ))}
-        </span>
-        <motion.span
-          className="ai-ops-brand-ai"
-          aria-hidden
-          initial={skipMotion ? false : { opacity: 0, y: 10, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ delay: skipMotion ? 0 : 0.36, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        >
-          AI
-        </motion.span>
-      </div>
-      <motion.div
-        className="ai-ops-brand-rule"
-        initial={skipMotion ? false : { scaleX: 0, opacity: 0 }}
-        animate={{ scaleX: 1, opacity: 1 }}
-        transition={{ delay: skipMotion ? 0 : 0.52, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <span className="ai-ops-brand-rule-packet" aria-hidden />
-      </motion.div>
-    </div>
-  )
-}
-
 function MessageBlock({ message, pending }: { message: AiChatMessage; pending?: boolean }) {
   const { t } = useTranslation()
   const user = message.role === 'user'
   return (
     <div className={cn('ai-ops-msg', user ? 'is-user' : 'is-bot')}>
-      {!user ? (
-        <div className="ai-ops-avatar">
-          <Bot className="h-3.5 w-3.5" />
-        </div>
-      ) : (
-        <div className="ai-ops-avatar is-user" aria-hidden>
-          {t('ai.you')}
-        </div>
-      )}
       <div className="ai-ops-bubble">
         {message.tools?.length ? (
           <div className="ai-ops-tools">

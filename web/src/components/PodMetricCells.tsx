@@ -1,5 +1,7 @@
+import type { TFunction } from 'i18next'
 import { cn } from '@/lib/utils'
 import type { PodMetricsItem } from '@/api/cluster'
+import type { ResourceColumn } from '@/components/ResourceListPage'
 
 function toneForRatio(ratio?: number): string {
   if (ratio == null || !Number.isFinite(ratio) || ratio <= 0) return 'text-text-dim'
@@ -41,12 +43,19 @@ export function PercentCell({
   return <MetricValue value={percent} ratio={ratio} title={hint} />
 }
 
-export function podMetricColumns(get: (item: any) => PodMetricsItem | undefined) {
+/**
+ * Headers stay in kubectl's own vocabulary (CPU, %CPU/R) — only the hover hints
+ * are prose, so `t` is passed in rather than read from a hook.
+ */
+export function podMetricColumns(
+  get: (item: any) => PodMetricsItem | undefined,
+  t: TFunction,
+): ResourceColumn[] {
   return [
     {
       key: 'cpu',
       header: 'CPU',
-      title: 'Current CPU usage (metrics-server)',
+      titleKey: 'metrics.cpu',
       render: (item: any) => {
         const m = get(item)
         return (
@@ -60,14 +69,14 @@ export function podMetricColumns(get: (item: any) => PodMetricsItem | undefined)
     {
       key: 'cpuR',
       header: '%CPU/R',
-      title: 'CPU usage as % of Request',
+      titleKey: 'metrics.cpuRequest',
       render: (item: any) => {
         const m = get(item)
         return (
           <PercentCell
             percent={m?.cpuRequestPercent}
             ratio={m?.cpuRequestRatio}
-            hint={m?.cpuRequest ? `request ${m.cpuRequest}` : 'no CPU request'}
+            hint={m?.cpuRequest ? `request ${m.cpuRequest}` : t('metrics.noCpuRequest')}
           />
         )
       },
@@ -75,14 +84,14 @@ export function podMetricColumns(get: (item: any) => PodMetricsItem | undefined)
     {
       key: 'cpuL',
       header: '%CPU/L',
-      title: 'CPU usage as % of Limit',
+      titleKey: 'metrics.cpuLimit',
       render: (item: any) => {
         const m = get(item)
         return (
           <PercentCell
             percent={m?.cpuLimitPercent}
             ratio={m?.cpuLimitRatio}
-            hint={m?.cpuLimit ? `limit ${m.cpuLimit}` : 'no CPU limit'}
+            hint={m?.cpuLimit ? `limit ${m.cpuLimit}` : t('metrics.noCpuLimit')}
           />
         )
       },
@@ -90,7 +99,7 @@ export function podMetricColumns(get: (item: any) => PodMetricsItem | undefined)
     {
       key: 'mem',
       header: 'MEM',
-      title: 'Current memory usage (metrics-server)',
+      titleKey: 'metrics.mem',
       render: (item: any) => {
         const m = get(item)
         return (
@@ -104,14 +113,14 @@ export function podMetricColumns(get: (item: any) => PodMetricsItem | undefined)
     {
       key: 'memR',
       header: '%MEM/R',
-      title: 'Memory usage as % of Request',
+      titleKey: 'metrics.memRequest',
       render: (item: any) => {
         const m = get(item)
         return (
           <PercentCell
             percent={m?.memoryRequestPercent}
             ratio={m?.memoryRequestRatio}
-            hint={m?.memoryRequest ? `request ${m.memoryRequest}` : 'no memory request'}
+            hint={m?.memoryRequest ? `request ${m.memoryRequest}` : t('metrics.noMemRequest')}
           />
         )
       },
@@ -119,14 +128,14 @@ export function podMetricColumns(get: (item: any) => PodMetricsItem | undefined)
     {
       key: 'memL',
       header: '%MEM/L',
-      title: 'Memory usage as % of Limit',
+      titleKey: 'metrics.memLimit',
       render: (item: any) => {
         const m = get(item)
         return (
           <PercentCell
             percent={m?.memoryLimitPercent}
             ratio={m?.memoryLimitRatio}
-            hint={m?.memoryLimit ? `limit ${m.memoryLimit}` : 'no memory limit'}
+            hint={m?.memoryLimit ? `limit ${m.memoryLimit}` : t('metrics.noMemLimit')}
           />
         )
       },

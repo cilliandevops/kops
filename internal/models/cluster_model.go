@@ -4,7 +4,11 @@ import "time"
 
 type CreateClusterRequest struct {
 	Name           string `json:"name" binding:"required"`
-	KubeconfigData string `json:"kubeconfigData" binding:"required"`
+	KubeconfigData string `json:"kubeconfigData"`
+	Server         string `json:"server"`
+	Token          string `json:"token"`
+	CAData         string `json:"caData"`
+	Insecure       bool   `json:"insecure"`
 	Provider       string `json:"provider"`
 	Description    string `json:"description"`
 	Environment    string `json:"environment"`

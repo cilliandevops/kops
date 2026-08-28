@@ -5,6 +5,7 @@ import { fetchOAuthProviders, register, type OAuthProviderInfo } from '@/api/aut
 import { fetchShowcaseInfo, type ShowcaseInfo } from '@/api/showcase'
 import { useAuth } from '@/store/auth'
 import { BrandMark } from '@/components/BrandMark'
+import { ParticleField } from '@/components/ParticleField'
 import { StarSupportRotator } from '@/components/StarSupportCta'
 import { Button, Input } from '@/components/ui'
 import { APP_REPO_URL, APP_VERSION, formatAppVersion } from '@/lib/version'
@@ -108,10 +109,11 @@ export function LoginPage() {
 
   return (
     <div className="login-page relative flex min-h-dvh w-full flex-col overflow-x-hidden">
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-24 top-16 h-72 w-72 rounded-full bg-cyan/10 blur-3xl lg:left-[8%] lg:top-[22%]" />
-        <div className="absolute -right-16 bottom-10 h-80 w-80 rounded-full bg-orange/10 blur-3xl lg:right-[6%] lg:bottom-[16%]" />
-      </div>
+      {/* Fixed, not absolute: the grid it lights up is a `background-attachment: fixed`
+          layer, so anchoring to the viewport is what keeps the two in register. The
+          explicit size is load-bearing — inset alone leaves a replaced element like
+          <canvas> at its intrinsic 300x150. */}
+      <ParticleField className="pointer-events-none fixed inset-0 h-full w-full" />
 
       <div className="login-enter relative mx-auto grid w-full max-w-[1100px] flex-1 lg:grid-cols-[1fr_minmax(0,26rem)] lg:items-center lg:gap-x-10 xl:gap-x-16">
         {/* Brand / pitch — top on mobile, left on desktop */}

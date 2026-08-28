@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { apiGet } from '@/lib/api'
 import { useAuth } from '@/store/auth'
 import { AuditGeoMap, type GeoStats } from '@/components/AuditGeoMap'
+import { regionLabel } from '@/lib/geoRegion'
 import { Badge, Button, Card, EmptyState, PageHeader, StatCard } from '@/components/ui'
 import { HudTable, HudTableScroll } from '@/components/HudTableScroll'
 import { cn } from '@/lib/utils'
@@ -123,6 +124,9 @@ function resultTone(result: string, status?: number): 'ok' | 'danger' | 'warn' |
   return 'accent'
 }
 
+/** Result tokens the backend emits that have a localized label. */
+const RESULT_LABELS = ['success', 'ok', 'failed', 'failure', 'denied', 'allowed']
+
 const PRESETS: { label: string; hours: number }[] = [
   { label: '1h', hours: 1 },
   { label: '24h', hours: 24 },
@@ -222,10 +226,15 @@ export function AuditPage() {
       .slice(0, 5)
   }, [reportQ.data])
 
+  const resultLabel = (raw: string) => {
+    const key = raw.toLowerCase()
+    return RESULT_LABELS.includes(key) ? t(`audit.resultValue.${key}`) : raw
+  }
+
   if (!isAdmin) {
     return (
       <div className="rounded border border-warn/40 bg-warn/10 px-5 py-8 text-sm text-warn">
-        Admin privileges required to view audit logs.
+        {t('audit.adminRequired')}
       </div>
     )
   }
@@ -236,7 +245,7 @@ export function AuditPage() {
 
       <Card className="space-y-3 p-5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="hud-label">Range</span>
+          <span className="hud-label">{t('audit.range')}</span>
           {PRESETS.map((p) => (
             <Button
               key={p.label}
@@ -251,7 +260,7 @@ export function AuditPage() {
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <label className="block space-y-1">
-            <span className="hud-label">Action</span>
+            <span className="hud-label">{t('audit.colAction')}</span>
             <input
               className="hud-field w-40"
               value={action}
@@ -263,7 +272,7 @@ export function AuditPage() {
             />
           </label>
           <label className="block space-y-1">
-            <span className="hud-label">User ID</span>
+            <span className="hud-label">{t('audit.filterUserId')}</span>
             <input
               className="hud-field w-28"
               value={userId}
@@ -275,7 +284,7 @@ export function AuditPage() {
             />
           </label>
           <label className="block space-y-1">
-            <span className="hud-label">Start</span>
+            <span className="hud-label">{t('audit.startTime')}</span>
             <input
               type="datetime-local"
               lang="en"
@@ -289,7 +298,7 @@ export function AuditPage() {
             />
           </label>
           <label className="block space-y-1">
-            <span className="hud-label">End</span>
+            <span className="hud-label">{t('audit.endTime')}</span>
             <input
               type="datetime-local"
               lang="en"
@@ -303,7 +312,7 @@ export function AuditPage() {
             />
           </label>
           <label className="block space-y-1">
-            <span className="hud-label">Page</span>
+            <span className="hud-label">{t('audit.page')}</span>
             <input
               type="number"
               min={1}
@@ -325,17 +334,15 @@ export function AuditPage() {
               }
             }}
           >
-            Refresh
+            {t('common.refresh')}
           </Button>
         </div>
         {timesReady ? (
           <p className="text-xs text-text-dim">
-            Window (local): {formatLocalWindow(startLocal, endLocal)}
+            {t('audit.windowLocal', { window: formatLocalWindow(startLocal, endLocal) })}
           </p>
         ) : (
-          <p className="text-xs text-warn">
-            Set a valid start before end to load report and metrics summary cards.
-          </p>
+          <p className="text-xs text-warn">{t('audit.rangeInvalid')}</p>
         )}
       </Card>
 
@@ -390,14 +397,14 @@ export function AuditPage() {
             <thead>
               <tr>
                 <th className="w-10" />
-                <th>Time</th>
-                <th>User</th>
-                <th>Action</th>
-                <th>Resource</th>
-                <th>Result</th>
-                <th>IP</th>
-                <th>Region</th>
-                <th>Client</th>
+                <th>{t('audit.colTime')}</th>
+                <th>{t('audit.colUser')}</th>
+                <th>{t('audit.colAction')}</th>
+                <th>{t('audit.colResource')}</th>
+                <th>{t('audit.colResult')}</th>
+                <th>{t('audit.colIp')}</th>
+                <th>{t('audit.colRegion')}</th>
+                <th>{t('audit.colClient')}</th>
               </tr>
             </thead>
             <tbody>
@@ -411,10 +418,7 @@ export function AuditPage() {
                   (log.user_id != null ? `#${log.user_id}` : '-')
                 const ua = log.user_agent || (details?.user_agent as string | undefined) || ''
                 const ip = log.ip_address || log.ip || (details?.ip as string | undefined) || '-'
-                const region =
-                  log.region ||
-                  [log.country, log.province, log.city].filter(Boolean).join(' ') ||
-                  '-'
+                const region = regionLabel(log, t, '-')
                 const resourceBits = [log.resource || log.path, log.resource_id].filter(Boolean)
                 const resourceLabel = resourceBits.length ? resourceBits.join(' / ') : '-'
                 const status =
@@ -460,7 +464,7 @@ export function AuditPage() {
                       <td>
                         {result ? (
                           <Badge tone={resultTone(String(result), status as number | undefined)}>
-                            {String(result)}
+                            {resultLabel(String(result))}
                           </Badge>
                         ) : (
                           <span className="text-text-dim">-</span>
@@ -488,15 +492,19 @@ export function AuditPage() {
                         >
                           <div className="grid gap-3 text-xs md:grid-cols-2">
                             <div className="space-y-1">
-                              <div className="hud-label">Request</div>
+                              <div className="hud-label">{t('audit.request')}</div>
                               <div className="font-mono text-[11px] text-text break-all">
                                 {[method, path || resourceLabel].filter(Boolean).join(' ') || '-'}
                               </div>
                               {duration != null ? (
-                                <div className="text-text-dim">Duration: {Number(duration).toFixed(1)} ms</div>
+                                <div className="text-text-dim">
+                                  {t('audit.duration', { ms: Number(duration).toFixed(1) })}
+                                </div>
                               ) : null}
                               {status != null ? (
-                                <div className="text-text-dim">HTTP status: {String(status)}</div>
+                                <div className="text-text-dim">
+                                  {t('audit.httpStatus', { status: String(status) })}
+                                </div>
                               ) : null}
                               <div className="text-text-dim break-all">
                                 IP: {ip}
@@ -509,13 +517,13 @@ export function AuditPage() {
                               <div className="break-all text-[11px] text-text-dim">{ua || '-'}</div>
                             </div>
                             <div className="md:col-span-2 space-y-1">
-                              <div className="hud-label">Details (JSON)</div>
+                              <div className="hud-label">{t('audit.detailsJson')}</div>
                               <pre className="max-h-56 overflow-auto rounded border border-line bg-panel-solid p-3 font-mono text-[11px] leading-relaxed text-text whitespace-pre-wrap break-all">
                                 {details
                                   ? JSON.stringify(details, null, 2)
                                   : log.details
                                     ? String(log.details)
-                                    : '(empty)'}
+                                    : t('audit.detailsEmpty')}
                               </pre>
                             </div>
                           </div>
@@ -529,9 +537,7 @@ export function AuditPage() {
                 <tr>
                   <td colSpan={COL_COUNT}>
                     <EmptyState>
-                      {logsQ.isError
-                        ? 'Failed to load audit logs (is /api/v1/audit registered?)'
-                        : 'No audit entries yet.'}
+                      {logsQ.isError ? t('audit.loadFailed') : t('audit.empty')}
                     </EmptyState>
                   </td>
                 </tr>
@@ -540,9 +546,7 @@ export function AuditPage() {
           </HudTable>
         </HudTableScroll>
         <div className="flex items-center justify-between border-t border-line px-4 py-3 text-xs text-text-dim">
-          <span>
-            Page {page} / {totalPages} · {total} total
-          </span>
+          <span>{t('audit.pageInfo', { page, pages: totalPages, total })}</span>
           <div className="flex gap-2">
             <Button
               variant="ghost"
@@ -551,7 +555,7 @@ export function AuditPage() {
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              Prev
+              {t('audit.prev')}
             </Button>
             <Button
               variant="ghost"
@@ -560,7 +564,7 @@ export function AuditPage() {
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
             >
-              Next
+              {t('audit.next')}
             </Button>
           </div>
         </div>

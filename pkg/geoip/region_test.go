@@ -36,3 +36,31 @@ func TestClassifyNonPublic(t *testing.T) {
 		t.Fatalf("private: %+v", loc)
 	}
 }
+
+// Kind is what lets the UI render these in the reader's language — the labels
+// above are Chinese to match ip2region, which only ships Chinese place names.
+func TestClassifyNonPublicKind(t *testing.T) {
+	cases := map[string]Kind{
+		"127.0.0.1":   KindLoopback,
+		"::1":         KindLoopback,
+		"192.168.1.1": KindPrivate,
+		"10.0.0.7":    KindPrivate,
+		"169.254.1.1": KindPrivate,
+		"0.0.0.0":     KindUnspecified,
+		"not-an-ip":   KindInvalid,
+	}
+	for ip, want := range cases {
+		loc := classifyNonPublic(ip)
+		if loc == nil {
+			t.Fatalf("%s: got nil, want kind %q", ip, want)
+		}
+		if loc.Kind != want {
+			t.Errorf("%s: kind=%q, want %q", ip, loc.Kind, want)
+		}
+	}
+
+	// Public addresses must stay unmarked so the xdb result is shown verbatim.
+	if loc := classifyNonPublic("8.8.8.8"); loc != nil {
+		t.Errorf("public address classified as %+v, want nil", loc)
+	}
+}

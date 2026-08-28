@@ -12,26 +12,59 @@ import (
 
 type ClusterHandler struct {
 	service *service.ClusterService
+	access  *service.AccessService
 }
 
-func NewClusterHandler(svc *service.ClusterService) *ClusterHandler {
-	return &ClusterHandler{service: svc}
+func NewClusterHandler(svc *service.ClusterService, access *service.AccessService) *ClusterHandler {
+	return &ClusterHandler{service: svc, access: access}
+}
+
+func (h *ClusterHandler) decision(c *gin.Context) service.AccessDecision {
+	if h.access == nil {
+		return service.AccessDecision{Unrestricted: true}
+	}
+	return h.access.DecisionFromContext(c)
 }
 
 // ListClusters gets cluster list
 func (h *ClusterHandler) ListClusters(c *gin.Context) {
 	clusters := h.service.ListClusters()
+	d := h.decision(c)
+	if !d.Unrestricted {
+		filtered := clusters[:0]
+		for _, cl := range clusters {
+			if d.AllowsCluster(cl.ID) {
+				filtered = append(filtered, cl)
+			}
+		}
+		clusters = filtered
+	}
 	utils.ApiSuccess(c, clusters, "successfully retrieved cluster list")
 }
 
 // GetFleetSummary returns a multi-cluster health rollup for the fleet page.
 func (h *ClusterHandler) GetFleetSummary(c *gin.Context) {
-	utils.ApiSuccess(c, h.service.GetFleetSummary(), "successfully retrieved fleet summary")
+	sum := h.service.GetFleetSummary()
+	d := h.decision(c)
+	if sum != nil && !d.Unrestricted {
+		filtered := sum.Clusters[:0]
+		for _, card := range sum.Clusters {
+			if d.AllowsCluster(card.ID) {
+				filtered = append(filtered, card)
+			}
+		}
+		sum.Clusters = filtered
+	}
+	utils.ApiSuccess(c, sum, "successfully retrieved fleet summary")
 }
 
 // GetCluster gets single cluster details
 func (h *ClusterHandler) GetCluster(c *gin.Context) {
 	clusterID := c.Param("id")
+	if !h.decision(c).AllowsCluster(clusterID) {
+		utils.ApiError(c, http.StatusForbidden, "access denied for this cluster", clusterID)
+		return
+	}
 	cluster, err := h.service.GetClusterByID(clusterID)
 	if err != nil {
 		utils.ApiError(c, http.StatusNotFound, "failed to get cluster", err.Error())

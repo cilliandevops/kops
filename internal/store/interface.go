@@ -92,6 +92,32 @@ type UserSessionStore interface {
 	CleanupExpiredSessions(before time.Time) error
 }
 
+// EnvironmentStore persists workspace-lite environments.
+type EnvironmentStore interface {
+	CreateEnvironment(env *Environment) error
+	GetEnvironmentByID(id string) (*Environment, error)
+	GetEnvironmentByName(name string) (*Environment, error)
+	ListEnvironments() ([]Environment, error)
+	UpdateEnvironment(env *Environment) error
+	DeleteEnvironment(id string) error
+}
+
+// AccessGrantStore persists per-cluster / per-namespace user grants.
+type AccessGrantStore interface {
+	CreateAccessGrant(g *AccessGrant) error
+	GetAccessGrantByID(id uint) (*AccessGrant, error)
+	ListAccessGrants() ([]AccessGrant, error)
+	ListAccessGrantsByUser(userID uint) ([]AccessGrant, error)
+	DeleteAccessGrant(id uint) error
+}
+
+// RoleNavPolicyStore persists per-role sidebar visibility policies.
+type RoleNavPolicyStore interface {
+	ListRoleNavPolicies() ([]RoleNavPolicy, error)
+	GetRoleNavPolicies(roleNames []string) ([]RoleNavPolicy, error)
+	UpsertRoleNavPolicy(p *RoleNavPolicy) error
+}
+
 // Store is the main interface that combines all storage interfaces
 type Store interface {
 	ClusterStore
@@ -102,6 +128,9 @@ type Store interface {
 	AuditLogStore
 	LoginAttemptStore
 	UserSessionStore
+	EnvironmentStore
+	AccessGrantStore
+	RoleNavPolicyStore
 
 	// Initialize initializes the storage (creates tables, default data, etc.)
 	Initialize() error

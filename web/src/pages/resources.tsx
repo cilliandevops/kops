@@ -27,6 +27,7 @@ import { useCluster } from '@/store/cluster'
 import { useAuth } from '@/store/auth'
 import { useYamlModal } from '@/hooks/useYamlModal'
 import { buildInvestigateHref } from '@/lib/aiInvestigate'
+import { ServiceTypeControl } from '@/components/ServiceTypeControl'
 
 function ReadyBadge({ ok, okText = 'Ready', badText = 'NotReady' }: { ok: boolean; okText?: string; badText?: string }) {
   return <Badge tone={ok ? 'ok' : 'danger'}>{ok ? okText : badText}</Badge>
@@ -66,23 +67,23 @@ export function NamespacesPage() {
   return (
     <>
     <ResourceListPage
-      title="NAMESPACES"
-      subtitle="Cluster namespaces"
+      titleKey="nav.namespaces"
+      subtitleKey="resourcePages.namespaces.subtitle"
       resourceKey="namespaces"
       queryFn={() => listClusterResource('namespaces')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
-          render: (item) => <span className="font-semibold text-cyan">{metaName(item)}</span>,
+          headerKey: 'common.name',
+          render: (item) => nameLink('namespaces', item, false),
         },
         {
           key: 'status',
-          header: 'Status',
+          headerKey: 'common.status',
           render: (item) => <Badge tone="accent">{item.status?.phase || '-'}</Badge>,
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -106,26 +107,26 @@ export function PodsPage() {
   return (
     <>
       <ResourceListPage
-        title="PODS"
+        titleKey="nav.pods"
         namespaced
         resourceKey="pods"
         pinFirstColumn
         subtitle={
           metrics.available
-            ? 'CPU/MEM + % of request/limit (metrics-server, ~15s)'
-            : metrics.message || 'metrics-server unavailable — metrics show as -'
+            ? t('pods.metricsSubtitle')
+            : metrics.message || t('pods.metricsUnavailable')
         }
         queryFn={() => listNamespacedResource(namespace, 'pods')}
         columns={[
           {
             key: 'name',
-            header: 'Name',
+            headerKey: 'common.name',
             render: (item) => nameLink('pods', item),
           },
-          { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+          { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
           {
             key: 'status',
-            header: 'Status',
+            headerKey: 'common.status',
             render: (item) => {
               const phase = item.status?.phase || 'Unknown'
               const tone =
@@ -139,8 +140,9 @@ export function PodsPage() {
               return <Badge tone={tone}>{phase}</Badge>
             },
           },
-          ...podMetricColumns((item) =>
-            metrics.map.get(podMetricsKey(metaNamespace(item), metaName(item))),
+          ...podMetricColumns(
+            (item) => metrics.map.get(podMetricsKey(metaNamespace(item), metaName(item))),
+            t,
           ),
           {
             key: 'restarts',
@@ -151,8 +153,8 @@ export function PodsPage() {
                 0,
               ),
           },
-          { key: 'age', header: 'Age', render: ageCell },
-          { key: 'created', header: 'Created', render: createdCell },
+          { key: 'age', headerKey: 'common.age', render: ageCell },
+          { key: 'created', headerKey: 'common.created', render: createdCell },
         ]}
         actions={(item) => (
           <div className="flex items-center gap-1">
@@ -248,17 +250,17 @@ export function DeploymentsPage() {
   return (
     <>
       <ResourceListPage
-        title="DEPLOYMENTS"
+        titleKey="nav.deployments"
         namespaced
         resourceKey="deployments"
         queryFn={() => listNamespacedResource(namespace, 'deployments')}
         columns={[
           {
             key: 'name',
-            header: 'Name',
+            headerKey: 'common.name',
             render: (item) => nameLink('deployments', item),
           },
-          { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+          { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
           {
             key: 'ready',
             header: 'Ready',
@@ -282,8 +284,8 @@ export function DeploymentsPage() {
             header: 'Available',
             render: (item) => item.status?.availableReplicas ?? 0,
           },
-          { key: 'age', header: 'Age', render: ageCell },
-          { key: 'created', header: 'Created', render: createdCell },
+          { key: 'age', headerKey: 'common.age', render: ageCell },
+          { key: 'created', headerKey: 'common.created', render: createdCell },
         ]}
         actions={(item, { refetch }) => (
           <div className="flex items-center gap-1">
@@ -305,20 +307,20 @@ export function DeploymentsPage() {
                   variant="ghost"
                   className="px-2 py-1 text-xs"
                   type="button"
-                  title="Scale"
+                  title={t('resourcePages.common.scale')}
                   onClick={() => {
                     refetchRef.current = refetch
                     setScaleErr('')
                     setScaleTarget(item)
                   }}
                 >
-                  Scale
+                  {t('resourcePages.common.scale')}
                 </Button>
                 <Button
                   variant="ghost"
                   className="px-2 py-1"
                   type="button"
-                  title="Restart"
+                  title={t('resourcePages.common.restart')}
                   onClick={() => {
                     refetchRef.current = refetch
                     setRestartTarget(item)
@@ -355,7 +357,7 @@ export function DeploymentsPage() {
             refetchRef.current?.()
             setScaleTarget(null)
           } catch (e: any) {
-            setScaleErr(e?.message || 'Scale failed')
+            setScaleErr(e?.message || t('resourcePages.common.scaleFailed'))
           } finally {
             setScaleBusy(false)
           }
@@ -363,11 +365,13 @@ export function DeploymentsPage() {
       />
       <ConfirmDialog
         open={Boolean(restartTarget)}
-        title="RESTART DEPLOYMENT"
+        title={t('resourcePages.deployments.restartTitle')}
         danger={false}
-        confirmLabel="Restart"
+        confirmLabel={t('resourcePages.common.restart')}
         busy={scaleBusy}
-        description={`Roll restart ${metaNamespace(restartTarget)}/${metaName(restartTarget)}?`}
+        description={t('resourcePages.common.restartConfirm', {
+          target: `${metaNamespace(restartTarget)}/${metaName(restartTarget)}`,
+        })}
         onClose={() => setRestartTarget(null)}
         onConfirm={async () => {
           setScaleBusy(true)
@@ -385,7 +389,7 @@ export function DeploymentsPage() {
             refetchRef.current?.()
             setRestartTarget(null)
           } catch (e: any) {
-            setScaleErr(e?.message || 'Restart failed')
+            setScaleErr(e?.message || t('resourcePages.common.restartFailed'))
             setRestartTarget(null)
           } finally {
             setScaleBusy(false)
@@ -394,9 +398,9 @@ export function DeploymentsPage() {
       />
       <ConfirmDialog
         open={Boolean(scaleErr)}
-        title="OPERATION FAILED"
+        title={t('resourcePages.common.operationFailed')}
         danger={false}
-        confirmLabel="OK"
+        confirmLabel={t('common.confirm')}
         description={scaleErr}
         onClose={() => setScaleErr('')}
         onConfirm={() => setScaleErr('')}
@@ -406,6 +410,7 @@ export function DeploymentsPage() {
 }
 
 export function StatefulSetsPage() {
+  const { t } = useTranslation()
   const { namespace } = useNamespace()
   const { canMutate } = useAuth()
   const { yamlButton, yamlModal } = useYamlModal('statefulsets', true)
@@ -418,17 +423,17 @@ export function StatefulSetsPage() {
   return (
     <>
       <ResourceListPage
-        title="STATEFULSETS"
+        titleKey="nav.statefulsets"
         namespaced
         resourceKey="statefulsets"
         queryFn={() => listNamespacedResource(namespace, 'statefulsets')}
         columns={[
           {
             key: 'name',
-            header: 'Name',
+            headerKey: 'common.name',
             render: (item) => nameLink('statefulsets', item),
           },
-          { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+          { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
           {
             key: 'ready',
             header: 'Ready',
@@ -443,8 +448,8 @@ export function StatefulSetsPage() {
             header: 'Service',
             render: (item) => item.spec?.serviceName || '-',
           },
-          { key: 'age', header: 'Age', render: ageCell },
-          { key: 'created', header: 'Created', render: createdCell },
+          { key: 'age', headerKey: 'common.age', render: ageCell },
+          { key: 'created', headerKey: 'common.created', render: createdCell },
         ]}
         actions={(item, { refetch }) => (
           <div className="flex items-center gap-1">
@@ -454,18 +459,19 @@ export function StatefulSetsPage() {
                   variant="ghost"
                   className="px-2 py-1 text-xs"
                   type="button"
+                  title={t('resourcePages.common.scale')}
                   onClick={() => {
                     refetchRef.current = refetch
                     setScaleTarget(item)
                   }}
                 >
-                  Scale
+                  {t('resourcePages.common.scale')}
                 </Button>
                 <Button
                   variant="ghost"
                   className="px-2 py-1"
                   type="button"
-                  title="Restart"
+                  title={t('resourcePages.common.restart')}
                   onClick={() => {
                     refetchRef.current = refetch
                     setRestartTarget(item)
@@ -497,7 +503,7 @@ export function StatefulSetsPage() {
             refetchRef.current?.()
             setScaleTarget(null)
           } catch (e: any) {
-            setScaleErr(e?.message || 'Scale failed')
+            setScaleErr(e?.message || t('resourcePages.common.scaleFailed'))
           } finally {
             setScaleBusy(false)
           }
@@ -505,11 +511,13 @@ export function StatefulSetsPage() {
       />
       <ConfirmDialog
         open={Boolean(restartTarget)}
-        title="RESTART STATEFULSET"
+        title={t('resourcePages.statefulsets.restartTitle')}
         danger={false}
-        confirmLabel="Restart"
+        confirmLabel={t('resourcePages.common.restart')}
         busy={scaleBusy}
-        description={`Roll restart ${metaNamespace(restartTarget)}/${metaName(restartTarget)}?`}
+        description={t('resourcePages.common.restartConfirm', {
+          target: `${metaNamespace(restartTarget)}/${metaName(restartTarget)}`,
+        })}
         onClose={() => setRestartTarget(null)}
         onConfirm={async () => {
           setScaleBusy(true)
@@ -527,7 +535,7 @@ export function StatefulSetsPage() {
             refetchRef.current?.()
             setRestartTarget(null)
           } catch (e: any) {
-            setScaleErr(e?.message || 'Restart failed')
+            setScaleErr(e?.message || t('resourcePages.common.restartFailed'))
             setRestartTarget(null)
           } finally {
             setScaleBusy(false)
@@ -536,9 +544,9 @@ export function StatefulSetsPage() {
       />
       <ConfirmDialog
         open={Boolean(scaleErr)}
-        title="OPERATION FAILED"
+        title={t('resourcePages.common.operationFailed')}
         danger={false}
-        confirmLabel="OK"
+        confirmLabel={t('common.confirm')}
         description={scaleErr}
         onClose={() => setScaleErr('')}
         onConfirm={() => setScaleErr('')}
@@ -553,17 +561,17 @@ export function DaemonSetsPage() {
   return (
     <>
     <ResourceListPage
-      title="DAEMONSETS"
+      titleKey="nav.daemonsets"
       namespaced
       resourceKey="daemonsets"
       queryFn={() => listNamespacedResource(namespace, 'daemonsets')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('daemonsets', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'ready',
           header: 'Ready',
@@ -583,8 +591,8 @@ export function DaemonSetsPage() {
           header: 'Available',
           render: (item) => item.status?.numberAvailable ?? 0,
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -600,17 +608,17 @@ export function JobsPage() {
   return (
     <>
     <ResourceListPage
-      title="JOBS"
+      titleKey="nav.jobs"
       namespaced
       resourceKey="jobs"
       queryFn={() => listNamespacedResource(namespace, 'jobs')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('jobs', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'completions',
           header: 'Completions',
@@ -630,8 +638,8 @@ export function JobsPage() {
           header: 'Failed',
           render: (item) => item.status?.failed ?? 0,
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -642,22 +650,23 @@ export function JobsPage() {
 }
 
 export function CronJobsPage() {
+  const { t } = useTranslation()
   const { namespace } = useNamespace()
   const { yamlButton, yamlModal } = useYamlModal('cronjobs', true)
   return (
     <>
     <ResourceListPage
-      title="CRONJOBS"
+      titleKey="nav.cronjobs"
       namespaced
       resourceKey="cronjobs"
       queryFn={() => listNamespacedResource(namespace, 'cronjobs')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('cronjobs', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'schedule',
           header: 'Schedule',
@@ -668,7 +677,7 @@ export function CronJobsPage() {
           header: 'Suspend',
           render: (item) => (
             <Badge tone={item.spec?.suspend ? 'warn' : 'ok'}>
-              {item.spec?.suspend ? 'Yes' : 'No'}
+              {item.spec?.suspend ? t('common.yes') : t('common.no')}
             </Badge>
           ),
         },
@@ -685,8 +694,8 @@ export function CronJobsPage() {
               '-'
             ),
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -697,22 +706,23 @@ export function CronJobsPage() {
 }
 
 export function NetworkPoliciesPage() {
+  const { t } = useTranslation()
   const { namespace } = useNamespace()
   const { yamlButton, yamlModal } = useYamlModal('networkpolicies', true)
   return (
     <>
     <ResourceListPage
-      title="NETWORK POLICIES"
+      titleKey="nav.networkpolicies"
       namespaced
       resourceKey="networkpolicies"
       queryFn={() => listNamespacedResource(namespace, 'networkpolicies')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('networkpolicies', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'podSelector',
           header: 'Pod selector',
@@ -721,7 +731,7 @@ export function NetworkPoliciesPage() {
             const entries = Object.entries(labels)
             return entries.length
               ? entries.map(([k, v]) => `${k}=${v}`).join(', ')
-              : 'All pods'
+              : t('resourcePages.networkpolicies.allPods')
           },
         },
         {
@@ -729,8 +739,8 @@ export function NetworkPoliciesPage() {
           header: 'Policy types',
           render: (item) => (item.spec?.policyTypes || []).join(', ') || '-',
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -741,22 +751,23 @@ export function NetworkPoliciesPage() {
 }
 
 export function ServiceAccountsPage() {
+  const { t } = useTranslation()
   const { namespace } = useNamespace()
   const { yamlButton, yamlModal } = useYamlModal('serviceaccounts', true)
   return (
     <>
     <ResourceListPage
-      title="SERVICE ACCOUNTS"
+      titleKey="nav.serviceaccounts"
       namespaced
       resourceKey="serviceaccounts"
       queryFn={() => listNamespacedResource(namespace, 'serviceaccounts')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('serviceaccounts', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'secrets',
           header: 'Secrets',
@@ -767,13 +778,13 @@ export function ServiceAccountsPage() {
           header: 'Automount',
           render: (item) =>
             item.automountServiceAccountToken === false ? (
-              <Badge tone="warn">Off</Badge>
+              <Badge tone="warn">{t('resourcePages.common.off')}</Badge>
             ) : (
-              <Badge tone="ok">On</Badge>
+              <Badge tone="ok">{t('resourcePages.common.on')}</Badge>
             ),
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -789,21 +800,21 @@ export function ServicesPage() {
   return (
     <>
     <ResourceListPage
-      title="SERVICES"
+      titleKey="nav.services"
       namespaced
       resourceKey="services"
       queryFn={() => listNamespacedResource(namespace, 'services')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('services', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'type',
           header: 'Type',
-          render: (item) => <Badge tone="accent">{item.spec?.type || 'ClusterIP'}</Badge>,
+          render: (item) => <ServiceTypeControl item={item} />,
         },
         {
           key: 'clusterip',
@@ -818,8 +829,8 @@ export function ServicesPage() {
               .map((p: any) => `${p.port}${p.nodePort ? `:${p.nodePort}` : ''}/${p.protocol || 'TCP'}`)
               .join(', ') || '-',
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -835,17 +846,17 @@ export function IngressPage() {
   return (
     <>
     <ResourceListPage
-      title="INGRESS"
+      titleKey="nav.ingress"
       namespaced
       resourceKey="ingresses"
       queryFn={() => listNamespacedResource(namespace, 'ingresses')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('ingresses', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'class',
           header: 'Class',
@@ -857,8 +868,8 @@ export function IngressPage() {
           render: (item) =>
             (item.spec?.rules || []).map((r: any) => r.host).filter(Boolean).join(', ') || '-',
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -869,17 +880,18 @@ export function IngressPage() {
 }
 
 export function GatewayClassesPage() {
+  const { t } = useTranslation()
   const { yamlButton, yamlModal } = useYamlModal('gatewayclasses', false)
   return (
     <>
     <ResourceListPage
-      title="GATEWAY CLASSES"
+      titleKey="nav.gatewayclasses"
       resourceKey="gatewayclasses"
       queryFn={() => listClusterResource('gatewayclasses')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('gatewayclasses', item, false),
         },
         {
@@ -895,11 +907,17 @@ export function GatewayClassesPage() {
           render: (item) => {
             const cond = (item.status?.conditions || []).find((c: any) => c.type === 'Accepted')
             const ok = cond?.status === 'True'
-            return <ReadyBadge ok={ok} okText="Yes" badText={cond ? 'No' : '-'} />
+            return (
+              <ReadyBadge
+                ok={ok}
+                okText={t('common.yes')}
+                badText={cond ? t('common.no') : '-'}
+              />
+            )
           },
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -914,17 +932,17 @@ export function GatewaysPage() {
   return (
     <>
     <ResourceListPage
-      title="GATEWAYS"
+      titleKey="nav.gateways"
       namespaced
       resourceKey="gateways"
       queryFn={() => listNamespacedResource(namespace, 'gateways')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('gateways', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'class',
           header: 'Class',
@@ -945,8 +963,8 @@ export function GatewaysPage() {
             (item.status?.addresses || []).map((a: any) => a.value).filter(Boolean).join(', ') ||
             '-',
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -961,17 +979,17 @@ export function HTTPRoutesPage() {
   return (
     <>
     <ResourceListPage
-      title="HTTP ROUTES"
+      titleKey="nav.httproutes"
       namespaced
       resourceKey="httproutes"
       queryFn={() => listNamespacedResource(namespace, 'httproutes')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('httproutes', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'hostnames',
           header: 'Hostnames',
@@ -997,8 +1015,8 @@ export function HTTPRoutesPage() {
             )
           },
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -1013,24 +1031,24 @@ export function ConfigMapsPage() {
   return (
     <>
     <ResourceListPage
-      title="CONFIGMAPS"
+      titleKey="nav.configmaps"
       namespaced
       resourceKey="configmaps"
       queryFn={() => listNamespacedResource(namespace, 'configmaps')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('configmaps', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'keys',
           header: 'Data keys',
           render: (item) => Object.keys(item.data || {}).length,
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -1041,30 +1059,31 @@ export function ConfigMapsPage() {
 }
 
 export function SecretsPage() {
+  const { t } = useTranslation()
   const { namespace } = useNamespace()
   const { checkPermission } = useAuth()
   const { yamlButton, yamlModal } = useYamlModal('secrets', true)
   if (!checkPermission('secrets', 'read')) {
     return (
       <div className="rounded border border-warn/40 bg-warn/10 px-5 py-8 text-sm text-warn">
-        Secrets are restricted to administrators. Your role cannot view or modify secret data.
+        {t('resourcePages.secrets.restricted')}
       </div>
     )
   }
   return (
     <>
     <ResourceListPage
-      title="SECRETS"
+      titleKey="nav.secrets"
       namespaced
       resourceKey="secrets"
       queryFn={() => listNamespacedResource(namespace, 'secrets')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('secrets', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'type',
           header: 'Type',
@@ -1075,8 +1094,8 @@ export function SecretsPage() {
           header: 'Data keys',
           render: (item) => Object.keys(item.data || {}).length,
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -1091,14 +1110,14 @@ export function PVPage() {
   return (
     <>
     <ResourceListPage
-      title="PERSISTENT VOLUMES"
+      titleKey="nav.pv"
       resourceKey="persistentvolumes"
       queryFn={() => listClusterResource('persistentvolumes')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
-          render: (item) => <span className="font-semibold text-cyan">{metaName(item)}</span>,
+          headerKey: 'common.name',
+          render: (item) => nameLink('persistentvolumes', item, false),
         },
         {
           key: 'capacity',
@@ -1112,7 +1131,7 @@ export function PVPage() {
         },
         {
           key: 'status',
-          header: 'Status',
+          headerKey: 'common.status',
           render: (item) => <Badge tone="accent">{item.status?.phase || '-'}</Badge>,
         },
         {
@@ -1123,8 +1142,8 @@ export function PVPage() {
               ? `${item.spec.claimRef.namespace}/${item.spec.claimRef.name}`
               : '-',
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -1140,20 +1159,20 @@ export function PVCPage() {
   return (
     <>
     <ResourceListPage
-      title="PERSISTENT VOLUME CLAIMS"
+      titleKey="nav.pvc"
       namespaced
       resourceKey="persistentvolumeclaims"
       queryFn={() => listNamespacedResource(namespace, 'persistentvolumeclaims')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
+          headerKey: 'common.name',
           render: (item) => nameLink('persistentvolumeclaims', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'status',
-          header: 'Status',
+          headerKey: 'common.status',
           render: (item) => {
             const phase = item.status?.phase || '-'
             return <Badge tone={phase === 'Bound' ? 'ok' : 'warn'}>{phase}</Badge>
@@ -1169,8 +1188,8 @@ export function PVCPage() {
           header: 'Capacity',
           render: (item) => item.status?.capacity?.storage || item.spec?.resources?.requests?.storage || '-',
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -1181,18 +1200,19 @@ export function PVCPage() {
 }
 
 export function StorageClassPage() {
+  const { t } = useTranslation()
   const { yamlButton, yamlModal } = useYamlModal('storageclasses', false)
   return (
     <>
     <ResourceListPage
-      title="STORAGE CLASSES"
+      titleKey="nav.storageclass"
       resourceKey="storageclasses"
       queryFn={() => listClusterResource('storageclasses')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
-          render: (item) => <span className="font-semibold text-cyan">{metaName(item)}</span>,
+          headerKey: 'common.name',
+          render: (item) => nameLink('storageclasses', item, false),
         },
         {
           key: 'provisioner',
@@ -1214,13 +1234,13 @@ export function StorageClassPage() {
           header: 'Default',
           render: (item) =>
             item.metadata?.annotations?.['storageclass.kubernetes.io/is-default-class'] === 'true' ? (
-              <ReadyBadge ok okText="Yes" badText="No" />
+              <ReadyBadge ok okText={t('common.yes')} badText={t('common.no')} />
             ) : (
-              <Badge tone="neutral">No</Badge>
+              <Badge tone="neutral">{t('common.no')}</Badge>
             ),
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -1236,24 +1256,24 @@ export function RolesPage() {
   return (
     <>
     <ResourceListPage
-      title="ROLES"
+      titleKey="nav.roles"
       namespaced
       resourceKey="roles"
       queryFn={() => listNamespacedResource(namespace, 'roles')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
-          render: (item) => <span className="font-semibold text-cyan">{metaName(item)}</span>,
+          headerKey: 'common.name',
+          render: (item) => nameLink('roles', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'rules',
           header: 'Rules',
           render: (item) => (item.rules || []).length,
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -1269,17 +1289,17 @@ export function RoleBindingsPage() {
   return (
     <>
     <ResourceListPage
-      title="ROLE BINDINGS"
+      titleKey="nav.rolebindings"
       namespaced
       resourceKey="rolebindings"
       queryFn={() => listNamespacedResource(namespace, 'rolebindings')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
-          render: (item) => <span className="font-semibold text-cyan">{metaName(item)}</span>,
+          headerKey: 'common.name',
+          render: (item) => nameLink('rolebindings', item),
         },
-        { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+        { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
         {
           key: 'role',
           header: 'Role',
@@ -1293,8 +1313,8 @@ export function RoleBindingsPage() {
           header: 'Subjects',
           render: (item) => (item.subjects || []).length,
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -1309,22 +1329,22 @@ export function ClusterRolesPage() {
   return (
     <>
     <ResourceListPage
-      title="CLUSTER ROLES"
+      titleKey="nav.clusterroles"
       resourceKey="clusterroles"
       queryFn={() => listClusterResource('clusterroles')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
-          render: (item) => <span className="font-semibold text-cyan">{metaName(item)}</span>,
+          headerKey: 'common.name',
+          render: (item) => nameLink('clusterroles', item, false),
         },
         {
           key: 'rules',
           header: 'Rules',
           render: (item) => (item.rules || []).length,
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -1339,14 +1359,14 @@ export function ClusterRoleBindingsPage() {
   return (
     <>
     <ResourceListPage
-      title="CLUSTER ROLE BINDINGS"
+      titleKey="nav.clusterrolebindings"
       resourceKey="clusterrolebindings"
       queryFn={() => listClusterResource('clusterrolebindings')}
       columns={[
         {
           key: 'name',
-          header: 'Name',
-          render: (item) => <span className="font-semibold text-cyan">{metaName(item)}</span>,
+          headerKey: 'common.name',
+          render: (item) => nameLink('clusterrolebindings', item, false),
         },
         {
           key: 'role',
@@ -1361,8 +1381,8 @@ export function ClusterRoleBindingsPage() {
           header: 'Subjects',
           render: (item) => (item.subjects || []).length,
         },
-        { key: 'age', header: 'Age', render: ageCell },
-        { key: 'created', header: 'Created', render: createdCell },
+        { key: 'age', headerKey: 'common.age', render: ageCell },
+        { key: 'created', headerKey: 'common.created', render: createdCell },
       ]}
       actions={(item) => yamlButton(item)}
     />
@@ -1378,17 +1398,17 @@ export function HPAPage() {
   return (
     <>
       <ResourceListPage
-        title="HORIZONTAL POD AUTOSCALERS"
+        titleKey="nav.hpa"
         namespaced
         resourceKey="horizontalpodautoscalers"
         queryFn={() => listNamespacedResource(namespace, 'horizontalpodautoscalers')}
         columns={[
           {
             key: 'name',
-            header: 'Name',
+            headerKey: 'common.name',
             render: (item) => nameLink('horizontalpodautoscalers', item),
           },
-          { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+          { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
           {
             key: 'target',
             header: 'Target',
@@ -1412,8 +1432,8 @@ export function HPAPage() {
             header: 'Current',
             render: (item) => item.status?.currentReplicas ?? '-',
           },
-          { key: 'age', header: 'Age', render: ageCell },
-          { key: 'created', header: 'Created', render: createdCell },
+          { key: 'age', headerKey: 'common.age', render: ageCell },
+          { key: 'created', headerKey: 'common.created', render: createdCell },
         ]}
         actions={(item) => yamlButton(item)}
       />
@@ -1428,17 +1448,17 @@ export function PDBPage() {
   return (
     <>
       <ResourceListPage
-        title="POD DISRUPTION BUDGETS"
+        titleKey="nav.pdb"
         namespaced
         resourceKey="poddisruptionbudgets"
         queryFn={() => listNamespacedResource(namespace, 'poddisruptionbudgets')}
         columns={[
           {
             key: 'name',
-            header: 'Name',
+            headerKey: 'common.name',
             render: (item) => nameLink('poddisruptionbudgets', item),
           },
-          { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+          { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
           {
             key: 'min',
             header: 'Min available',
@@ -1456,8 +1476,8 @@ export function PDBPage() {
             header: 'Allowed disruptions',
             render: (item) => item.status?.disruptionsAllowed ?? '-',
           },
-          { key: 'age', header: 'Age', render: ageCell },
-          { key: 'created', header: 'Created', render: createdCell },
+          { key: 'age', headerKey: 'common.age', render: ageCell },
+          { key: 'created', headerKey: 'common.created', render: createdCell },
         ]}
         actions={(item) => yamlButton(item)}
       />
@@ -1472,17 +1492,17 @@ export function ResourceQuotasPage() {
   return (
     <>
       <ResourceListPage
-        title="RESOURCE QUOTAS"
+        titleKey="nav.resourcequotas"
         namespaced
         resourceKey="resourcequotas"
         queryFn={() => listNamespacedResource(namespace, 'resourcequotas')}
         columns={[
           {
             key: 'name',
-            header: 'Name',
+            headerKey: 'common.name',
             render: (item) => nameLink('resourcequotas', item),
           },
-          { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+          { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
           {
             key: 'hard',
             header: 'Hard limits',
@@ -1493,8 +1513,8 @@ export function ResourceQuotasPage() {
             header: 'Used keys',
             render: (item) => Object.keys(item.status?.used || {}).length,
           },
-          { key: 'age', header: 'Age', render: ageCell },
-          { key: 'created', header: 'Created', render: createdCell },
+          { key: 'age', headerKey: 'common.age', render: ageCell },
+          { key: 'created', headerKey: 'common.created', render: createdCell },
         ]}
         actions={(item) => yamlButton(item)}
       />
@@ -1509,17 +1529,17 @@ export function LimitRangesPage() {
   return (
     <>
       <ResourceListPage
-        title="LIMIT RANGES"
+        titleKey="nav.limitranges"
         namespaced
         resourceKey="limitranges"
         queryFn={() => listNamespacedResource(namespace, 'limitranges')}
         columns={[
           {
             key: 'name',
-            header: 'Name',
+            headerKey: 'common.name',
             render: (item) => nameLink('limitranges', item),
           },
-          { key: 'ns', header: 'Namespace', render: (item) => metaNamespace(item) },
+          { key: 'ns', headerKey: 'common.namespace', render: (item) => metaNamespace(item) },
           {
             key: 'limits',
             header: 'Limits',
@@ -1534,8 +1554,8 @@ export function LimitRangesPage() {
                 .filter(Boolean)
                 .join(', ') || '-',
           },
-          { key: 'age', header: 'Age', render: ageCell },
-          { key: 'created', header: 'Created', render: createdCell },
+          { key: 'age', headerKey: 'common.age', render: ageCell },
+          { key: 'created', headerKey: 'common.created', render: createdCell },
         ]}
         actions={(item) => yamlButton(item)}
       />

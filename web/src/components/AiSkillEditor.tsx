@@ -1,7 +1,7 @@
 import { useEffect, useId, useState, type FormEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { X } from 'lucide-react'
+import { Trash2, X } from 'lucide-react'
 import type { AiSkillDef, CustomSkillInput } from '@/lib/aiSkills'
 
 type Props = {
@@ -9,9 +9,10 @@ type Props = {
   initial?: AiSkillDef | null
   onClose: () => void
   onSave: (input: CustomSkillInput & { id?: string }) => void
+  onDelete?: (id: string) => void
 }
 
-export function AiSkillEditor({ open, initial, onClose, onSave }: Props) {
+export function AiSkillEditor({ open, initial, onClose, onSave, onDelete }: Props) {
   const { t } = useTranslation()
   const titleId = useId()
   const [label, setLabel] = useState('')
@@ -110,6 +111,17 @@ export function AiSkillEditor({ open, initial, onClose, onSave }: Props) {
         <div className="ai-ops-skill-editor-foot">
           <p className="ai-ops-skill-editor-note">{t('ai.skillEditorNote')}</p>
           <div className="ai-ops-skill-editor-actions">
+            {initial?.custom && onDelete ? (
+              <button
+                type="button"
+                className="ai-ops-skill-editor-delete"
+                onClick={() => onDelete(initial.id)}
+                title={t('common.delete')}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                {t('common.delete')}
+              </button>
+            ) : null}
             <button type="button" className="ai-ops-skill-editor-cancel" onClick={onClose}>
               {t('common.cancel')}
             </button>

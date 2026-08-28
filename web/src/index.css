@@ -28,45 +28,54 @@
 }
 
 @theme {
-  /* Latin Maple + system CJK — fast on mobile. */
-  --font-display: "Maple Mono", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
-  --font-sans: "Maple Mono", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
-  --font-mono: "Maple Mono", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", ui-monospace, monospace;
+  /*
+   * Must match the default pack in theme/fonts.ts — the browser's own font for chrome,
+   * Maple for code only. applyFont() only runs after the first paint, so a mismatch here
+   * shows up as text reflowing in a different face on load.
+   */
+  --font-display: sans-serif;
+  --font-sans: sans-serif;
+  --font-mono: "Maple Mono", ui-monospace, monospace;
+  --font-brand: sans-serif;
 
-  /* Defaults = TRON dark; runtime themes override via documentElement */
-  --color-bg: #04070a;
-  --color-panel: rgba(8, 18, 24, 0.78);
-  --color-panel-solid: #071016;
-  --color-line: rgba(53, 230, 255, 0.18);
-  --color-cyan: #35e6ff;
-  --color-cyan-dim: #1a7f92;
-  --color-cyan-faint: rgba(53, 230, 255, 0.14);
-  --color-orange: #ffae00;
-  --color-text: #cfeef5;
-  --color-text-dim: #6f98a3;
-  --color-ok: #4dffb0;
-  --color-warn: #ffae00;
-  --color-danger: #ff4d5e;
-  --color-accent: #35e6ff;
-  --color-accent-bright: #7af0ff;
-  --color-signal: #ffae00;
-  --color-ink: #cfeef5;
-  --color-ink-soft: #6f98a3;
-  --color-mist: rgba(53, 230, 255, 0.06);
+  /*
+   * Defaults must match the Paper theme in theme/themes.ts: applyTheme() only runs
+   * after the first paint, so any mismatch shows up as a flash of the wrong theme.
+   */
+  --color-bg: #ebe6da;
+  --color-panel: rgba(255, 253, 248, 0.97);
+  --color-panel-solid: #fffdf8;
+  --color-line: rgba(6, 90, 116, 0.38);
+  --color-cyan: #065a74;
+  --color-cyan-dim: #2f6678;
+  --color-cyan-faint: rgba(6, 90, 116, 0.2);
+  --color-orange: #a03d0a;
+  --color-text: #0b1218;
+  --color-text-dim: #3a4a54;
+  --color-ok: #0f6b42;
+  --color-warn: #a03d0a;
+  --color-danger: #a82222;
+  --color-accent: #065a74;
+  --color-accent-bright: #065a74;
+  --color-signal: #a03d0a;
+  --color-ink: #0b1218;
+  --color-ink-soft: #3a4a54;
+  --color-mist: rgba(6, 90, 116, 0.11);
 }
 
 :root {
-  --color-ambient: rgba(53, 230, 255, 0.08);
-  --color-grid-line: rgba(53, 230, 255, 0.06);
-  --color-selection: rgba(53, 230, 255, 0.28);
-  --color-glow: rgba(53, 230, 255, 0.35);
-  --color-scroll-thumb: rgba(53, 230, 255, 0.4);
-  --color-scroll-track: rgba(7, 16, 22, 0.55);
+  color-scheme: light;
+  --color-ambient: rgba(6, 90, 116, 0.14);
+  --color-grid-line: rgba(6, 90, 116, 0.12);
+  --color-selection: rgba(6, 90, 116, 0.26);
+  --color-glow: rgba(6, 90, 116, 0.14);
+  --color-scroll-thumb: rgba(6, 90, 116, 0.5);
+  --color-scroll-track: rgba(255, 253, 248, 0.85);
   /* Logs / xterm surface — overridden by applyTheme() */
-  --color-term-bg: #040a0e;
-  --color-term-fg: #cfeef5;
-  --color-term-cursor: #35e6ff;
-  --color-term-selection: rgba(53, 230, 255, 0.25);
+  --color-term-bg: #f7f3ea;
+  --color-term-fg: #0b1218;
+  --color-term-cursor: #065a74;
+  --color-term-selection: rgba(6, 90, 116, 0.28);
 }
 
 /* Logs / YAML / xterm host — follow theme terminal pack (incl. form controls) */
@@ -240,6 +249,23 @@ body {
   border-width: 0 2px 2px 0;
 }
 
+/*
+ * Neutral themes: a panel is just a surface. No corner brackets, no accent inset
+ * stroke, no bloom — one quiet shadow does the layering instead.
+ */
+html[data-theme-neutral] .hud-panel {
+  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.05);
+}
+
+html[data-theme-neutral] .hud-panel::before,
+html[data-theme-neutral] .hud-panel::after {
+  content: none;
+}
+
+html[data-theme-neutral][data-theme-mode="dark"] .hud-panel {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
 .hud-label {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -249,16 +275,151 @@ body {
   color: var(--color-text-dim);
 }
 
-.hud-brand {
-  font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: 0.18em;
+/* Sidebar accordion — shadcn-style rows, not caption labels. */
+.app-nav {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.55rem 0.5rem 0.85rem;
+}
+
+.app-nav-section + .app-nav-section {
+  margin-top: 0.12rem;
+}
+
+.app-nav-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.55rem;
+  border: 0;
+  background: transparent;
+  padding: 0.35rem 0.5rem;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-nav-toggle:hover {
+  background: var(--color-mist);
+}
+
+.app-nav-section.is-current .app-nav-toggle {
   color: var(--color-cyan);
-  text-shadow: 0 0 10px var(--color-glow);
+}
+
+.app-nav-toggle .app-nav-icon {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.75;
+}
+
+.app-nav-chevron {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex-shrink: 0;
+  margin-left: auto;
+  opacity: 0.45;
+  transition: transform 0.15s ease;
+}
+
+.app-nav-section.is-open .app-nav-chevron {
+  transform: rotate(0deg);
+}
+
+.app-nav-section:not(.is-open) .app-nav-chevron {
+  transform: rotate(-90deg);
+}
+
+.app-nav-group {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.3;
+  text-transform: none;
+}
+
+.app-nav-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0.1rem 0 0.35rem;
+}
+
+.app-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2rem;
+  border: 0;
+  border-left: 2px solid transparent;
+  background: transparent;
+  padding: 0.28rem 0.5rem 0.28rem 2.05rem;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-decoration: none;
+}
+
+.app-nav-item:hover {
+  background: var(--color-mist);
+  color: var(--color-text);
+}
+
+.app-nav-item.is-active {
+  border-left-color: var(--color-cyan);
+  background: color-mix(in srgb, var(--color-cyan) 11%, transparent);
+  color: var(--color-cyan);
+  font-weight: 600;
+}
+
+/* Long kind names (ReplicationControllers) must ellipsize, not get sliced off. */
+.app-nav-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-nav-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.app-nav-item:hover .app-nav-icon,
+.app-nav-item.is-active .app-nav-icon,
+.app-nav-toggle:hover .app-nav-icon,
+.app-nav-section.is-current .app-nav-toggle .app-nav-icon {
+  opacity: 1;
+}
+
+/* Titles are mixed-case kind names now; the extra tracking only suited all-caps. */
+html[lang="zh-CN"] .page-header-title {
+  letter-spacing: normal;
+}
+
+.hud-brand {
+  font-family: var(--font-brand);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  text-shadow: none;
 }
 
 .hud-brand .accent {
-  color: var(--color-orange);
+  color: var(--color-cyan);
 }
 
 .hud-field,
@@ -1451,7 +1612,9 @@ html[data-theme-mode='light'] aside {
 .app-topbar {
   z-index: var(--z-shell);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);
+  /* Equal side tracks keep the centered switcher centered on the viewport, not
+     on whatever space the brand and the right-hand controls happen to leave. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 0.5rem;
   width: 100%;
@@ -1500,6 +1663,7 @@ html[data-theme-mode='light'] aside {
 .app-topbar-center {
   justify-content: center;
   gap: 0.4rem;
+  width: 100%;
   max-width: 100%;
   overflow-x: clip;
   overflow-y: visible;
@@ -1511,61 +1675,137 @@ html[data-theme-mode='light'] aside {
   overflow: visible;
 }
 
-.app-topbar-context {
+/* Search sits at the right edge, before status and the user menu. It gives up
+   width first so the centered switcher never has to move. */
+.app-topbar-search {
   display: flex;
   min-width: 0;
-  align-items: center;
-  gap: 0.5rem;
+  flex: 0 1 18rem;
+  justify-content: flex-end;
 }
 
-.app-topbar-context-label {
-  display: none;
-}
-
-@media (min-width: 1280px) {
-  .app-topbar-context-label {
-    display: inline;
-  }
-
-  .app-topbar-center {
-    gap: 0.65rem;
-  }
-}
-
-.app-topbar-field {
+.app-topbar-search .hud-select-trigger,
+.app-topbar-search #hud-global-search-trigger {
+  width: 100%;
   min-width: 0;
-  max-width: 100%;
-}
-
-.app-topbar-select {
-  min-width: 0 !important;
-}
-
-.app-topbar-search-expanded {
   max-width: 18rem;
 }
 
-@media (min-width: 1536px) {
-  .app-topbar-search-expanded {
-    max-width: 22rem;
+/* Below lg the switcher labels need the room, so search collapses to its icon. */
+@media (max-width: 1023px) {
+  .app-topbar-search {
+    flex: 0 0 auto;
+  }
+
+  .app-topbar-search #hud-global-search-trigger {
+    width: 2.25rem;
+    min-width: 2.25rem;
+    max-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .app-topbar-search #hud-global-search-trigger > span,
+  .app-topbar-search #hud-global-search-trigger > kbd {
+    display: none !important;
   }
 }
 
-/* Icon-only search trigger below xl — avoid a second expanding bar */
-.app-topbar-search-compact .hud-select-trigger {
-  width: 2.25rem !important;
-  min-width: 2.25rem !important;
-  max-width: 2.25rem !important;
-  height: 2.25rem !important;
-  flex: 0 0 2.25rem !important;
-  padding: 0 !important;
-  justify-content: center !important;
-  gap: 0 !important;
+/* Page scope strip (cluster/namespace) between the topbar and page content. */
+.app-context-bar {
+  display: flex;
+  min-width: 0;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.625rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--color-line);
 }
 
-.app-topbar-search-compact .hud-select-trigger > span,
-.app-topbar-search-compact .hud-select-trigger > kbd {
-  display: none !important;
+@media (min-width: 640px) {
+  .app-context-bar {
+    margin-bottom: 0.875rem;
+    padding-bottom: 0.75rem;
+  }
+}
+
+.app-context-fields {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* Phones stack the caption over its select so long cluster ids keep full width;
+   from sm up the caption sits inline to its left. */
+.app-context-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+
+.app-context-label {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Phones split the row evenly; wider screens keep both pickers left-aligned. */
+.app-context-field.is-cluster,
+.app-context-field.is-ns {
+  flex: 1 1 0;
+}
+
+@media (min-width: 640px) {
+  .app-context-fields {
+    flex: 0 1 auto;
+    gap: 1rem;
+  }
+
+  .app-context-field {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .app-context-field.is-cluster {
+    flex: 0 1 22rem;
+    min-width: 13rem;
+  }
+
+  .app-context-field.is-ns {
+    flex: 0 0 15rem;
+  }
+}
+
+.app-context-select {
+  width: 100%;
+  min-width: 0;
+}
+
+.app-context-select .hud-select-trigger {
+  width: 100%;
+  min-width: 0;
+  height: 2.25rem;
+  padding: 0 0.5rem 0 0.55rem;
+  gap: 0.375rem;
+}
+
+@media (min-width: 640px) {
+  .app-context-select .hud-select-trigger {
+    height: 2.5rem;
+  }
+}
+
+.app-context-select .hud-select-leading {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-dim);
 }
 
 @media (min-width: 640px) {
@@ -1581,13 +1821,16 @@ html[data-theme-mode='light'] aside {
   .app-topbar-right {
     gap: 0.65rem;
   }
+}
 
-  .app-topbar-search-compact .hud-select-trigger {
-    width: 2.5rem !important;
-    min-width: 2.5rem !important;
-    max-width: 2.5rem !important;
-    height: 2.5rem !important;
-    flex-basis: 2.5rem !important;
+@media (min-width: 1280px) {
+  .app-topbar-search {
+    flex: 0 1 22rem;
+  }
+
+  .app-topbar-search .hud-select-trigger,
+  .app-topbar-search #hud-global-search-trigger {
+    max-width: 22rem;
   }
 }
 
@@ -1617,22 +1860,23 @@ html[data-theme-mode='light'] aside {
   background: color-mix(in srgb, var(--color-cyan) 10%, transparent);
 }
 
-/* Compact mobile nav — left of brand, only < md (sidebar covers ≥ md) */
+/* Mobile nav toggle — left of full brand; sidebar covers ≥ md */
 .app-topbar-nav-toggle {
   display: inline-flex;
-  height: 1.75rem;
-  width: 1.75rem;
+  height: 2.25rem;
+  width: 2.25rem;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border: 0;
-  border-radius: 0.3rem;
-  color: var(--color-text-dim);
+  border: 1px solid var(--color-line);
+  border-radius: 0.375rem;
+  color: var(--color-cyan);
   background: transparent;
-  transition: color 150ms ease, background-color 150ms ease;
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
 }
 
 .app-topbar-nav-toggle:hover {
+  border-color: var(--color-cyan);
   color: var(--color-cyan);
   background: color-mix(in srgb, var(--color-cyan) 8%, transparent);
 }
@@ -1679,6 +1923,80 @@ html[data-theme-mode='light'] aside {
   background: color-mix(in srgb, var(--color-cyan) 16%, transparent);
 }
 
+/* Top-level section switcher: AI · Console · Marketplace */
+.app-topbar-switch {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.125rem;
+  border: 1px solid var(--color-line);
+  border-radius: 0.375rem;
+  background: color-mix(in srgb, var(--color-panel-solid) 60%, transparent);
+}
+
+.app-topbar-switch-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.45rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--color-text-dim);
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.app-topbar-switch-item:hover {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-cyan) 8%, transparent);
+}
+
+.app-topbar-switch-item.is-active {
+  color: var(--color-cyan);
+  background: color-mix(in srgb, var(--color-cyan) 12%, transparent);
+  font-weight: 500;
+}
+
+@media (min-width: 640px) {
+  .app-topbar-switch-item {
+    padding: 0.35rem 0.65rem;
+  }
+}
+
+/* Sidebar customizer: compact reorder / visibility controls */
+.nav-customizer-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--color-text-dim);
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease, background-color 150ms ease;
+}
+
+.nav-customizer-icon:hover:not(:disabled) {
+  border-color: var(--color-line);
+  background: var(--color-mist);
+  color: var(--color-cyan);
+}
+
+.nav-customizer-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-customizer-icon.is-off {
+  color: var(--color-text-dim);
+  opacity: 0.7;
+}
+
 .app-topbar .hud-select-trigger {
   transition: border-color 150ms ease, background-color 150ms ease;
 }
@@ -1714,6 +2032,7 @@ html[data-theme-mode='dark'] .login-page aside.login-brand {
   display: none;
 }
 
+.app-surface,
 .login-page .login-card {
   border: 1px solid color-mix(in srgb, var(--color-line) 75%, transparent);
   background: color-mix(in srgb, var(--color-panel-solid) 78%, var(--color-bg));
@@ -1729,6 +2048,7 @@ html[data-theme-mode='dark'] .login-page aside.login-brand {
   display: none;
 }
 
+html[data-theme-mode='light'] .app-surface,
 html[data-theme-mode='light'] .login-page .login-card {
   background: color-mix(in srgb, var(--color-panel-solid) 70%, var(--color-bg));
   box-shadow: 0 14px 42px rgba(12, 20, 28, 0.07);
@@ -1783,15 +2103,14 @@ html[data-theme-mode='light'] .login-page .login-card {
   }
 }
 
-/* Soft ambient only — avoid hard vertical banding around the content column */
-.login-page > .pointer-events-none {
-  opacity: 0.85;
-}
+/* The field measures the card and copy and dims itself there, so no blanket opacity
+   here — that would only flatten the contrast it is deliberately building. */
 
-html[data-font='maple'] body,
-html[data-font='maple'] .hud-field,
-html[data-font='maple'] .hud-label,
-html[data-font='maple'] .hud-table {
+/* Mono at UI sizes sets too tight; only the all-mono pack needs the extra track. */
+html[data-font='maple-cn'] body,
+html[data-font='maple-cn'] .hud-field,
+html[data-font='maple-cn'] .hud-label,
+html[data-font='maple-cn'] .hud-table {
   letter-spacing: 0.01em;
 }
 
@@ -2061,29 +2380,18 @@ html[data-font='maple'] .hud-table {
 
 /* ── AI workspace (login home) ───────────────────────────────────── */
 .ai-ops {
-  --ai-signal: var(--color-orange);
+  --ai-signal: var(--color-cyan);
   position: relative;
   display: flex;
   height: 100%;
   min-height: 0;
   width: 100%;
   overflow: hidden;
-  background:
-    radial-gradient(80% 50% at 50% -10%, color-mix(in srgb, var(--color-cyan) 14%, transparent), transparent 55%),
-    radial-gradient(50% 40% at 100% 80%, color-mix(in srgb, var(--ai-signal) 10%, transparent), transparent 50%),
-    var(--color-bg);
+  background: var(--color-bg);
 }
 
 .ai-ops-atmosphere {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  opacity: 0.4;
-  background-image:
-    linear-gradient(var(--color-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-grid-line) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
+  display: none;
 }
 
 .ai-ops-aside {
@@ -2095,7 +2403,7 @@ html[data-font='maple'] .hud-table {
   width: 0;
   overflow: hidden;
   border-right: 1px solid transparent;
-  background: color-mix(in srgb, var(--color-bg) 55%, var(--color-panel-solid));
+  background: var(--color-panel-solid);
   transition:
     width 0.22s ease,
     border-color 0.22s ease,
@@ -2112,6 +2420,7 @@ html[data-font='maple'] .hud-table {
   .ai-ops-aside.is-open {
     width: 248px;
     border-right-color: var(--color-line);
+    background: var(--color-panel-solid);
     opacity: 1;
     pointer-events: auto;
   }
@@ -2133,9 +2442,8 @@ html[data-font='maple'] .hud-table {
   width: min(86vw, 280px);
   flex-direction: column;
   border-right: 1px solid var(--color-line);
-  background: color-mix(in srgb, var(--color-bg) 40%, var(--color-panel-solid));
+  background: var(--color-panel-solid);
   padding-top: env(safe-area-inset-top);
-  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.5);
 }
 
 .ai-ops-backdrop {
@@ -2178,34 +2486,34 @@ html[data-font='maple'] .hud-table {
 }
 
 .ai-ops-kicker {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ai-signal);
+  font-family: var(--font-brand);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: var(--color-text-dim);
 }
 
 .ai-ops-rail-title {
-  margin-top: 0.1rem;
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-family: var(--font-brand);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
 }
 
 .ai-ops-new {
   width: 100%;
-  border: 1px solid color-mix(in srgb, var(--color-cyan) 40%, transparent);
-  background: color-mix(in srgb, var(--color-cyan) 10%, transparent);
-  color: var(--color-cyan);
-  border-radius: 999px;
-  padding: 0.55rem 0.85rem;
-  font-size: 0.78rem;
-  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: var(--color-mist);
+  color: var(--color-text);
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-brand);
+  font-size: 0.8rem;
+  font-weight: 550;
 }
 
 .ai-ops-new:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-cyan) 18%, transparent);
+  background: var(--color-mist);
 }
 
 .ai-ops-new:disabled {
@@ -2233,13 +2541,7 @@ html[data-font='maple'] .hud-table {
 }
 
 .ai-ops-timeline::before {
-  content: '';
-  position: absolute;
-  top: 0.75rem;
-  bottom: 0.75rem;
-  left: 0.72rem;
-  width: 1px;
-  background: linear-gradient(180deg, var(--color-line), transparent);
+  display: none;
 }
 
 .ai-ops-session-group {
@@ -2249,44 +2551,28 @@ html[data-font='maple'] .hud-table {
 }
 
 .ai-ops-session-group-label {
-  padding: 0.15rem 0.4rem 0.35rem 1.35rem;
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  padding: 0.35rem 0.55rem 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 500;
   color: var(--color-text-dim);
 }
 
 .ai-ops-session {
   position: relative;
   display: flex;
-  gap: 0.65rem;
+  align-items: flex-start;
+  gap: 0.35rem;
   width: 100%;
   text-align: left;
   border: 0;
   background: transparent;
   border-radius: 8px;
-  padding: 0.5rem 0.35rem 0.5rem 0.15rem;
+  padding: 0.45rem 0.4rem;
   cursor: pointer;
 }
 
 .ai-ops-session-dot {
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
-  width: 0.55rem;
-  height: 0.55rem;
-  margin-top: 0.35rem;
-  margin-left: 0.2rem;
-  border-radius: 999px;
-  border: 1px solid var(--color-line);
-  background: var(--color-panel-solid);
-}
-
-.ai-ops-session.is-active .ai-ops-session-dot {
-  border-color: var(--ai-signal);
-  background: var(--ai-signal);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ai-signal) 22%, transparent);
+  display: none;
 }
 
 .ai-ops-session:hover,
@@ -2304,15 +2590,13 @@ html[data-font='maple'] .hud-table {
 }
 
 .ai-ops-session-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.35rem;
+  display: none;
 }
 
 .ai-ops-session-time {
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.65rem;
   color: var(--color-text-dim);
 }
 
@@ -2356,7 +2640,6 @@ html[data-font='maple'] .hud-table {
   border: 1px solid var(--color-line);
   border-radius: 10px;
   background: var(--color-panel-solid);
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-bg) 55%, transparent);
 }
 
 .ai-ops-session-menu button {
@@ -2387,8 +2670,7 @@ html[data-font='maple'] .hud-table {
 }
 
 .ai-ops-session-title {
-  margin-top: 0.15rem;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   line-height: 1.35;
   color: var(--color-text);
   display: -webkit-box;
@@ -2400,7 +2682,6 @@ html[data-font='maple'] .hud-table {
 .ai-ops-session-rename {
   display: block;
   width: 100%;
-  margin-top: 0.2rem;
   border: 1px solid color-mix(in srgb, var(--color-cyan) 45%, var(--color-line));
   border-radius: 6px;
   background: var(--color-panel-solid);
@@ -2439,38 +2720,14 @@ html[data-font='maple'] .hud-table {
   min-width: 0;
   flex: 1;
   flex-direction: column;
+  background: var(--color-bg);
 }
 
 .ai-ops-toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 1rem;
-}
-
-.ai-ops-toolbar-left {
   display: flex;
-  min-width: 0;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.5rem;
-}
-
-.ai-ops-toolbar-center {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.ai-ops-toolbar-right {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.5rem;
+  gap: 0.65rem;
+  padding: 0.55rem 1rem;
 }
 
 .ai-ops-icon-btn {
@@ -2493,11 +2750,20 @@ html[data-font='maple'] .hud-table {
 .ai-ops-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  gap: 0.4rem;
+  font-family: var(--font-brand);
+  font-size: 0.72rem;
   color: var(--color-text-dim);
+}
+
+.ai-ops-status-label {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .ai-ops-status-label {
+    display: inline;
+  }
 }
 
 .ai-ops-status i {
@@ -2557,169 +2823,103 @@ html[data-font='maple'] .hud-table {
   font-size: 0.75rem;
 }
 
-/* Landing — title + chat shell */
-.ai-ops-landing {
+.ai-ops-empty {
   display: flex;
   min-height: 0;
   flex: 1;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow-y: auto;
-  padding: 1rem 1rem 1.75rem;
+  padding: 1.5rem 1.25rem 2rem;
 }
 
-.ai-ops-stage-core {
-  display: flex;
-  width: min(100%, 56rem);
-  margin: 0 auto;
-  flex-direction: column;
-  align-items: stretch;
-  text-align: center;
-}
-
-.ai-ops-brand {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.ai-ops-brand-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: center;
-  gap: 0.15em 0.35em;
-}
-
-.ai-ops-brand-main {
-  display: inline-flex;
-  font-family: var(--font-display);
-  font-size: clamp(2.4rem, 7vw, 4.25rem);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  line-height: 0.95;
-  color: var(--color-text);
-}
-
-.ai-ops-brand-letter {
-  display: inline-block;
-  will-change: transform, opacity, filter;
-}
-
-.ai-ops-brand-letter:nth-child(5),
-.ai-ops-brand-letter:nth-child(6),
-.ai-ops-brand-letter:nth-child(7),
-.ai-ops-brand-letter:nth-child(8) {
-  color: var(--color-cyan);
-}
-
-/* Typographic product mark — no chrome */
-.ai-ops-brand-ai {
-  display: inline-block;
-  align-self: flex-start;
-  margin-top: 0.12em;
-  margin-left: 0.05em;
-  padding-left: 0.4em;
-  border-left: 1px solid color-mix(in srgb, var(--color-line) 65%, var(--ai-signal) 35%);
-  font-family: var(--font-display);
-  font-size: clamp(0.95rem, 2.2vw, 1.35rem);
-  font-weight: 600;
-  letter-spacing: 0.28em;
-  line-height: 1;
-  color: var(--ai-signal);
-}
-
-.ai-ops-brand-rule {
-  position: relative;
-  width: min(100%, 17rem);
-  height: 2px;
-  overflow: hidden;
-  transform-origin: center;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--color-cyan) 40%, transparent) 20%,
-    color-mix(in srgb, var(--ai-signal) 75%, transparent) 50%,
-    color-mix(in srgb, var(--color-cyan) 40%, transparent) 80%,
-    transparent
-  );
-  box-shadow: 0 0 10px color-mix(in srgb, var(--color-cyan) 30%, transparent);
-}
-
-.ai-ops-brand-rule-packet {
-  position: absolute;
-  top: -1px;
-  left: 0;
-  width: 28%;
-  height: 4px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, #fff 70%, var(--color-cyan)),
-    transparent
-  );
-  filter: blur(0.2px);
-  animation: ai-ops-brand-packet 2.4s linear infinite;
+.ai-ops-empty-core {
+  width: min(100%, 36rem);
 }
 
 .ai-ops-hero-title {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.15rem, 2.6vw, 1.55rem);
+  font-family: var(--font-brand);
+  font-size: 1.5rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.35;
-  color: var(--color-text-dim);
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  color: var(--color-text);
   text-wrap: balance;
 }
 
 .ai-ops-hero-title em {
-  display: inline-block;
-  margin-left: 0.3em;
+  margin-left: 0.15em;
   font-style: normal;
-  color: var(--color-cyan);
+  font-weight: 500;
+  color: var(--color-text-dim);
 }
 
-.ai-ops-hero-sub {
-  margin: 0.45rem auto 0;
-  max-width: 26rem;
-  font-size: 0.86rem;
+.ai-ops-start-lead {
+  margin: 0.4rem 0 0;
+  font-size: 0.88rem;
   line-height: 1.5;
   color: var(--color-text-dim);
-  opacity: 0.9;
 }
 
-@keyframes ai-ops-brand-packet {
-  0% {
-    transform: translateX(-40%);
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
-  }
-  85% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(360%);
-    opacity: 0;
-  }
+.ai-ops-start-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 1.35rem 0 1.15rem;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ai-ops-brand-rule-packet {
-    animation: none !important;
-  }
-}
-
-.ai-ops-landing-composer {
+.ai-ops-start-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   width: 100%;
-  margin-top: 1.5rem;
+  padding: 0.7rem 0.8rem;
+  border: 0;
+  border-radius: 0.55rem;
+  background: transparent;
   text-align: left;
+  cursor: pointer;
+}
+
+.ai-ops-start-icon {
+  display: grid;
+  place-items: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  flex-shrink: 0;
+  border-radius: 0.45rem;
+  color: var(--color-cyan);
+  background: color-mix(in srgb, var(--color-cyan) 10%, transparent);
+}
+
+.ai-ops-start-item:hover:not(:disabled) {
+  background: var(--color-mist);
+}
+
+.ai-ops-start-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ai-ops-start-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ai-ops-start-label {
+  font-family: var(--font-brand);
+  font-size: 0.9rem;
+  font-weight: 550;
+  color: var(--color-text);
+}
+
+.ai-ops-start-blurb {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--color-text-dim);
 }
 
 /* Chat thread */
@@ -2730,9 +2930,15 @@ html[data-font='maple'] .hud-table {
   padding: 0.25rem 1rem 0.5rem;
 }
 
+.ai-ops-messages:has(.ai-ops-start) {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
 .ai-ops-messages-inner {
   display: flex;
-  width: min(100%, 56rem);
+  width: min(100%, 36rem);
   margin: 0 auto;
   flex-direction: column;
   gap: 1.1rem;
@@ -2741,72 +2947,44 @@ html[data-font='maple'] .hud-table {
 
 .ai-ops-msg {
   display: flex;
-  gap: 0.7rem;
-  align-items: flex-start;
+  width: min(100%, 36rem);
+  margin: 0 auto;
 }
 
 .ai-ops-msg.is-user {
-  flex-direction: row-reverse;
-}
-
-.ai-ops-avatar {
-  display: grid;
-  place-items: center;
-  width: 1.85rem;
-  height: 1.85rem;
-  flex-shrink: 0;
-  border: 1px solid var(--color-line);
-  border-radius: 999px;
-  color: var(--color-cyan);
-  background: color-mix(in srgb, var(--color-cyan) 8%, transparent);
-  font-size: 0.62rem;
-}
-
-.ai-ops-avatar.is-user {
-  color: var(--ai-signal);
-  border-color: color-mix(in srgb, var(--ai-signal) 40%, transparent);
-  background: color-mix(in srgb, var(--ai-signal) 10%, transparent);
+  justify-content: flex-end;
 }
 
 .ai-ops-bubble {
   min-width: 0;
-  max-width: min(100%, 36rem);
-  border: 1px solid var(--color-line);
-  border-radius: 14px;
-  padding: 0.8rem 0.95rem;
-  background: color-mix(in srgb, var(--color-panel-solid) 88%, transparent);
+  max-width: 100%;
+  border: 0;
+  border-radius: 0;
+  padding: 0.15rem 0;
+  background: transparent;
 }
 
 .ai-ops-msg.is-user .ai-ops-bubble {
-  border-color: color-mix(in srgb, var(--ai-signal) 35%, transparent);
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--ai-signal) 14%, transparent),
-    color-mix(in srgb, var(--color-cyan) 5%, transparent)
-  );
-  border-bottom-right-radius: 4px;
-}
-
-.ai-ops-msg.is-bot .ai-ops-bubble {
-  border-bottom-left-radius: 4px;
+  max-width: min(100%, 28rem);
+  border-radius: 0.65rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--color-mist);
 }
 
 .ai-ops-tools {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-bottom: 0.55rem;
-  padding-bottom: 0.55rem;
-  border-bottom: 1px solid var(--color-line);
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
 }
 
 .ai-ops-tool {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  border-radius: 999px;
+  border-radius: 0.35rem;
   border: 1px solid var(--color-line);
-  padding: 0.12rem 0.5rem;
+  padding: 0.12rem 0.4rem;
   font-family: var(--font-mono);
   font-size: 0.62rem;
   color: var(--color-text-dim);
@@ -2847,28 +3025,30 @@ html[data-font='maple'] .hud-table {
   border: 1px solid var(--color-line);
   background: var(--color-mist);
   color: var(--color-cyan);
-  border-radius: 999px;
-  padding: 0.3rem 0.65rem;
+  border-radius: 0.4rem;
+  padding: 0.28rem 0.55rem;
   font-size: 0.72rem;
-  transition: border-color 0.15s, transform 0.15s;
+  transition: border-color 0.15s;
 }
 
 .ai-ops-card:hover {
   border-color: var(--color-cyan);
-  transform: translateY(-1px);
 }
 
 .ai-ops-dock {
+  display: flex;
   flex-shrink: 0;
-  border-top: 1px solid color-mix(in srgb, var(--color-line) 55%, transparent);
-  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--color-bg) 88%, transparent) 28%);
-  padding: 0.85rem 1rem 1.15rem;
+  justify-content: center;
+  padding: 0 1rem 1.15rem;
+  background: transparent;
 }
 
-.ai-ops-dock .ai-ops-composer-wrap,
-.ai-ops-landing-composer .ai-ops-composer-wrap {
-  width: min(100%, 56rem);
-  margin: 0 auto;
+.ai-ops-dock .ai-ops-composer-wrap {
+  width: min(100%, 36rem);
+}
+
+.ai-ops-empty-core .ai-ops-composer-wrap {
+  width: 100%;
 }
 
 .ai-ops-composer-wrap {
@@ -2910,31 +3090,31 @@ html[data-font='maple'] .hud-table {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--color-line);
-  border-radius: 16px;
+  border-radius: 0.7rem;
   background: var(--color-panel-solid);
-  box-shadow: 0 10px 36px color-mix(in srgb, var(--color-bg) 35%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-text) 8%, transparent),
+    0 12px 32px color-mix(in srgb, var(--color-text) 8%, transparent);
   overflow: hidden;
 }
 
+.ai-ops-composer:focus-within {
+  border-color: color-mix(in srgb, var(--color-cyan) 55%, var(--color-line));
+}
+
 .ai-ops-composer.has-probes {
-  border-color: color-mix(in srgb, var(--color-cyan) 28%, var(--color-line));
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-cyan) 8%, transparent),
-    0 16px 48px color-mix(in srgb, var(--color-bg) 40%, transparent);
+  border-color: var(--color-line);
 }
 
 .ai-ops-skills {
   border-bottom: 1px solid var(--color-line);
-  background: color-mix(in srgb, var(--color-mist) 55%, transparent);
-  padding: 0.75rem 0.9rem 0.8rem;
+  padding: 0.7rem 0.9rem 0.75rem;
 }
 
 .ai-ops-skills-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.5rem;
 }
 
 .ai-ops-skills-top-actions {
@@ -3055,8 +3235,7 @@ html[data-font='maple'] .hud-table {
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
-  backdrop-filter: blur(4px);
+  background: color-mix(in srgb, var(--color-bg) 82%, transparent);
 }
 
 .ai-ops-skill-editor {
@@ -3065,9 +3244,9 @@ html[data-font='maple'] .hud-table {
   flex-direction: column;
   gap: 0.75rem;
   border: 1px solid color-mix(in srgb, var(--color-cyan) 28%, var(--color-line));
-  border-radius: 16px;
+  border-radius: 0.7rem;
   background: var(--color-panel-solid);
-  box-shadow: 0 24px 64px color-mix(in srgb, var(--color-bg) 55%, transparent);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--color-text) 10%, transparent);
   padding: 1rem 1.1rem 1.05rem;
 }
 
@@ -3108,8 +3287,7 @@ html[data-font='maple'] .hud-table {
 .ai-ops-skill-editor-field input:focus,
 .ai-ops-skill-editor-field textarea:focus {
   outline: none;
-  border-color: color-mix(in srgb, var(--color-cyan) 45%, var(--color-line));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-cyan) 12%, transparent);
+  border-color: var(--color-cyan);
 }
 
 .ai-ops-skill-editor-foot {
@@ -3147,6 +3325,24 @@ html[data-font='maple'] .hud-table {
   border-color: color-mix(in srgb, var(--color-text) 25%, var(--color-line));
 }
 
+.ai-ops-skill-editor-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-right: auto;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-danger);
+  padding: 0.4rem 0.75rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.ai-ops-skill-editor-delete:hover {
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+}
+
 .ai-ops-skills-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -3157,30 +3353,25 @@ html[data-font='maple'] .hud-table {
 .ai-ops-skills-tab {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  border: 1px solid transparent;
-  border-radius: 999px;
+  border: 0;
+  border-bottom: 1px solid transparent;
   background: transparent;
   color: var(--color-text-dim);
-  padding: 0.28rem 0.65rem;
-  font-size: 0.74rem;
+  padding: 0.2rem 0.15rem 0.35rem;
+  margin-right: 0.85rem;
+  font-family: var(--font-brand);
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
-  transition:
-    color 0.15s,
-    background 0.15s,
-    border-color 0.15s;
 }
 
 .ai-ops-skills-tab:hover {
   color: var(--color-text);
-  background: color-mix(in srgb, var(--color-panel-solid) 70%, transparent);
 }
 
 .ai-ops-skills-tab.is-active {
-  border-color: color-mix(in srgb, var(--color-cyan) 40%, var(--color-line));
-  background: color-mix(in srgb, var(--color-cyan) 12%, var(--color-panel-solid));
-  color: var(--color-cyan);
+  border-bottom-color: var(--color-text);
+  color: var(--color-text);
 }
 
 .ai-ops-skills-tab-count {
@@ -3236,24 +3427,18 @@ html[data-font='maple'] .hud-table {
 .ai-ops-skill {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  border: 1px solid var(--color-line);
-  border-radius: 999px;
-  background: var(--color-panel-solid);
-  color: var(--color-text);
-  padding: 0.38rem 0.75rem 0.38rem 0.45rem;
-  font-size: 0.78rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-dim);
+  padding: 0.2rem 0;
+  margin-right: 1rem;
+  font-family: var(--font-brand);
+  font-size: 0.8rem;
   cursor: pointer;
-  transition:
-    border-color 0.15s,
-    color 0.15s,
-    background 0.15s;
 }
 
 .ai-ops-skill:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--color-cyan) 45%, transparent);
-  color: var(--color-cyan);
-  background: color-mix(in srgb, var(--color-cyan) 8%, var(--color-panel-solid));
+  color: var(--color-text);
 }
 
 .ai-ops-skill:disabled {
@@ -3289,9 +3474,8 @@ html[data-font='maple'] .hud-table {
   margin: 0.55rem 0.65rem 0;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--color-cyan) 28%, var(--color-line));
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--color-mist) 70%, var(--color-panel-solid));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-cyan) 6%, transparent);
+  border-radius: 0.6rem;
+  background: var(--color-panel-solid);
 }
 
 .ai-ops-slash-head {
@@ -3412,18 +3596,18 @@ html[data-font='maple'] .hud-table {
   align-items: center;
   gap: 0.2rem;
   flex-shrink: 0;
-  border: 1px solid color-mix(in srgb, var(--color-cyan) 35%, var(--color-line));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--color-cyan) 8%, transparent);
-  color: var(--color-cyan);
-  padding: 0.12rem 0.45rem;
-  font-size: 0.65rem;
-  font-weight: 600;
+  border: 1px solid var(--color-line);
+  background: transparent;
+  color: var(--color-text-dim);
+  padding: 0.2rem 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 500;
   cursor: pointer;
 }
 
 .ai-ops-slash-trigger:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-cyan) 16%, transparent);
+  color: var(--color-text);
+  border-color: var(--color-text-dim);
 }
 
 .ai-ops-slash-trigger:disabled {
@@ -3470,6 +3654,41 @@ html[data-font='maple'] .hud-table {
   gap: 0.55rem;
 }
 
+/* Cluster / namespace pickers inside the composer bar — quiet until hovered,
+   so they read as context rather than competing with the Skill and Send buttons. */
+.ai-ops-scope {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.ai-ops-scope-sep {
+  color: var(--color-text-dim);
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+.ai-ops-scope-select > button {
+  max-width: 11rem;
+  border-color: transparent;
+  background: transparent;
+  padding: 0.12rem 0.35rem;
+  font-size: 11px;
+  color: var(--color-text-dim);
+}
+
+.ai-ops-scope-select > button:hover:not(:disabled) {
+  border-color: var(--color-line);
+  color: var(--color-text);
+}
+
+@media (max-width: 640px) {
+  .ai-ops-scope-select > button {
+    max-width: 6.5rem;
+  }
+}
+
 .ai-ops-agent-inline {
   display: inline-flex;
   align-items: center;
@@ -3486,11 +3705,12 @@ html[data-font='maple'] .hud-table {
 
 .ai-ops-hint {
   min-width: 0;
+  max-width: 16rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-family: var(--font-brand);
+  font-size: 0.72rem;
   color: var(--color-text-dim);
 }
 
@@ -3503,16 +3723,15 @@ html[data-font='maple'] .hud-table {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  height: 2.15rem;
+  width: 2rem;
+  height: 2rem;
   border: 0;
   border-radius: 999px;
-  background: var(--color-cyan);
-  color: #041018;
-  padding: 0 0.95rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  transition: filter 0.15s, opacity 0.15s;
+  background: var(--color-text);
+  color: var(--color-panel-solid);
+  padding: 0;
+  font-size: 0;
+  font-weight: 600;
 }
 
 .ai-ops-send:hover:not(:disabled) {
@@ -3520,13 +3739,24 @@ html[data-font='maple'] .hud-table {
 }
 
 .ai-ops-send:disabled {
-  opacity: 0.35;
+  border-color: var(--color-line);
+  background: transparent;
+  color: var(--color-text-dim);
 }
 
 .ai-ops-send.is-stop {
   background: transparent;
   border: 1px solid var(--color-danger);
   color: var(--color-danger);
+}
+
+.ai-ops-slash-trigger {
+  border-radius: 0.45rem;
+}
+
+.ai-ops-session-menu,
+.ai-ops-skill-editor {
+  border-radius: 0.6rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

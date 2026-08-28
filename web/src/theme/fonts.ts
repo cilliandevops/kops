@@ -1,4 +1,4 @@
-/** UI font packs — Latin Maple by default; optional Maple Mono CN (subset, on-demand). */
+/** UI font packs — sans UI + Maple mono for code by default; all-mono packs opt-in. */
 
 export type FontPack = {
   id: string
@@ -10,29 +10,39 @@ export type FontPack = {
   cjk: boolean
 }
 
-const SYSTEM_CJK =
-  '"PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei", system-ui, sans-serif'
+/*
+ * Nothing curated: no system-ui stack, no explicit CJK list. The generic families
+ * resolve to whatever the browser is configured to use, and browsers already fall back
+ * per character for glyphs the chosen face lacks, so naming CJK faces only overrides a
+ * choice the user has already made.
+ */
+const BROWSER_SANS = 'sans-serif'
+const BROWSER_MONO = 'ui-monospace, monospace'
+
+/** Maple Mono ships Latin only; CJK falls through to the browser's own monospace. */
+const MAPLE = `"Maple Mono", ${BROWSER_MONO}`
+const MAPLE_CN = `"Maple Mono CN", "Maple Mono", ${BROWSER_MONO}`
 
 export const FONT_PACKS: FontPack[] = [
   {
-    id: 'maple',
-    name: 'Maple Mono',
-    display: `"Maple Mono", ${SYSTEM_CJK}`,
-    sans: `"Maple Mono", ${SYSTEM_CJK}`,
-    mono: `"Maple Mono", ${SYSTEM_CJK}`,
+    id: 'sans',
+    name: 'Browser default + Maple Mono',
+    display: BROWSER_SANS,
+    sans: BROWSER_SANS,
+    mono: MAPLE,
     cjk: false,
   },
   {
     id: 'maple-cn',
-    name: 'Maple Mono CN',
-    display: `"Maple Mono CN", "Maple Mono", ${SYSTEM_CJK}`,
-    sans: `"Maple Mono CN", "Maple Mono", ${SYSTEM_CJK}`,
-    mono: `"Maple Mono CN", "Maple Mono", ${SYSTEM_CJK}`,
+    name: 'Maple Mono CN (all)',
+    display: MAPLE_CN,
+    sans: MAPLE_CN,
+    mono: MAPLE_CN,
     cjk: true,
   },
 ]
 
-export const DEFAULT_FONT_ID = 'maple'
+export const DEFAULT_FONT_ID = 'sans'
 export const FONT_STORAGE_KEY = 'cilikube_font'
 
 const MAPLE_CN_CSS_ID = 'maple-cn-split'
@@ -62,7 +72,12 @@ export function ensureMapleCnCss(): Promise<void> {
 }
 
 export function resolveFont(id?: string | null): FontPack {
-  // Migrate removed / legacy ids → latin maple
+  // The Latin-only all-mono pack was dropped as redundant: it differed from maple-cn
+  // only in where CJK glyphs came from. Keep such users on an all-mono UI rather than
+  // resetting them to sans — cn-font-split serves per-unicode-range chunks, so this
+  // only pulls the subsets actually rendered.
+  if (id === 'maple') return FONT_PACKS.find((f) => f.id === 'maple-cn') || FONT_PACKS[0]
+  // Migrate removed / legacy ids → default pack
   if (id === 'jetbrains' || id === 'hud') return FONT_PACKS[0]
   return FONT_PACKS.find((f) => f.id === id) || FONT_PACKS[0]
 }
@@ -81,6 +96,13 @@ export function applyFont(pack: FontPack): void {
   root.style.setProperty('--font-display', pack.display)
   root.style.setProperty('--font-sans', pack.sans)
   root.style.setProperty('--font-mono', pack.mono)
+  /*
+   * The wordmark follows the pack rather than having a face of its own, so an all-mono
+   * pack really is all-mono. This used to be pinned to "Geist Sans", which the app never
+   * loads a @font-face for, leaving the wordmark to render in the first installed CJK
+   * face's Latin glyphs.
+   */
+  root.style.setProperty('--font-brand', pack.display)
 }
 
 export function getStoredFontId(): string {

@@ -612,14 +612,16 @@ type GeoBucket struct {
 
 // GeoIPRow is one client IP with region and hit count.
 type GeoIPRow struct {
-	IP       string    `json:"ip"`
-	Hits     int       `json:"hits"`
-	Region   string    `json:"region,omitempty"`
-	Country  string    `json:"country,omitempty"`
-	Province string    `json:"province,omitempty"`
-	City     string    `json:"city,omitempty"`
-	ISP      string    `json:"isp,omitempty"`
-	LastSeen time.Time `json:"last_seen,omitempty"`
+	IP     string `json:"ip"`
+	Hits   int    `json:"hits"`
+	Region string `json:"region,omitempty"`
+	// RegionKind is set for non-public addresses so the client can localise them.
+	RegionKind string    `json:"region_kind,omitempty"`
+	Country    string    `json:"country,omitempty"`
+	Province   string    `json:"province,omitempty"`
+	City       string    `json:"city,omitempty"`
+	ISP        string    `json:"isp,omitempty"`
+	LastSeen   time.Time `json:"last_seen,omitempty"`
 }
 
 // GeoStats is geography + IP breakdown for the audit window.
@@ -659,13 +661,14 @@ func (a *geoAgg) visitors() int {
 }
 
 type ipAgg struct {
-	hits     int
-	lastSeen time.Time
-	country  string
-	province string
-	city     string
-	isp      string
-	region   string
+	hits       int
+	lastSeen   time.Time
+	country    string
+	province   string
+	city       string
+	isp        string
+	region     string
+	regionKind string
 }
 
 // GetGeoStats aggregates audit IPs into country / province / city / IP tables.
@@ -704,18 +707,20 @@ func (s *AuditService) GetGeoStats(startTime, endTime time.Time) (*GeoStats, err
 		}
 
 		loc := resolver.Lookup(ip)
-		country, province, city, isp, region := "", "", "", "", ""
+		country, province, city, isp, region, regionKind := "", "", "", "", "", ""
 		if loc != nil {
 			country = strings.TrimSpace(loc.Country)
 			province = strings.TrimSpace(loc.Province)
 			city = strings.TrimSpace(loc.City)
 			isp = strings.TrimSpace(loc.ISP)
 			region = strings.TrimSpace(loc.Label)
+			regionKind = string(loc.Kind)
 		}
 		if country == "" {
 			out.UnknownHits++
 			country = ""
 			region = ""
+			regionKind = ""
 		}
 
 		ia := byIP[ip]
@@ -728,7 +733,8 @@ func (s *AuditService) GetGeoStats(startTime, endTime time.Time) (*GeoStats, err
 			ia.lastSeen = log.CreatedAt
 		}
 		if ia.country == "" && country != "" {
-			ia.country, ia.province, ia.city, ia.isp, ia.region = country, province, city, isp, region
+			ia.country, ia.province, ia.city, ia.isp = country, province, city, isp
+			ia.region, ia.regionKind = region, regionKind
 		}
 
 		if country == "" {
@@ -796,7 +802,7 @@ func (s *AuditService) GetGeoStats(startTime, endTime time.Time) (*GeoStats, err
 	ips := make([]GeoIPRow, 0, len(byIP))
 	for ip, a := range byIP {
 		ips = append(ips, GeoIPRow{
-			IP: ip, Hits: a.hits, Region: a.region,
+			IP: ip, Hits: a.hits, Region: a.region, RegionKind: a.regionKind,
 			Country: a.country, Province: a.province, City: a.city, ISP: a.isp,
 			LastSeen: a.lastSeen,
 		})

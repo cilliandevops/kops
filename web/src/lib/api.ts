@@ -30,7 +30,9 @@ api.interceptors.request.use((config) => {
     !url.includes('/admin/') &&
     !url.includes('/audit/') &&
     !url.includes('/settings/') &&
-    !url.includes('/profile')
+    !url.includes('/profile') &&
+    !url.includes('/environments') &&
+    !url.includes('/me/access')
 
   if (clusterId && needsCluster) {
     config.params = { ...config.params, clusterId }
@@ -47,6 +49,15 @@ api.interceptors.response.use(
       if (!window.location.pathname.startsWith('/login')) {
         window.location.href = '/login'
       }
+    }
+    // Axios rejects before the envelope check below, so without this every failure
+    // surfaces as "Request failed with status code NNN" and the server's reason is lost.
+    const body = error.response?.data
+    if (body && typeof body === 'object') {
+      const message = (body as { message?: string }).message
+      const details = (body as { details?: string }).details
+      const combined = [message, details].filter(Boolean).join(': ')
+      if (combined) error.message = combined
     }
     return Promise.reject(error)
   },

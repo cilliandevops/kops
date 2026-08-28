@@ -266,7 +266,7 @@ ${scoped ? '  namespace: default\n' : ''}spec: {}
             <HudTable>
               <thead>
                 <tr>
-                  <th>Name</th>
+                  <th>{t('common.name')}</th>
                   <th>Group</th>
                   <th>Scope</th>
                 </tr>
@@ -318,14 +318,14 @@ ${scoped ? '  namespace: default\n' : ''}spec: {}
             ) : null}
           </div>
           {!selected ? (
-            <EmptyState>Select a CRD to list instances.</EmptyState>
+            <EmptyState>{t('crds.selectHint')}</EmptyState>
           ) : (
             <HudTableScroll maxHeightClass="max-h-[60vh]">
             <HudTable>
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Namespace</th>
+                    <th>{t('common.name')}</th>
+                    <th>{t('common.namespace')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -459,7 +459,7 @@ ${scoped ? '  namespace: default\n' : ''}spec: {}
       />
       <ConfirmDialog
         open={confirmDelete}
-        title="DELETE CUSTOM RESOURCE"
+        title="Delete custom resource"
         confirmText={instance?.name || instance?.metadata?.name}
         confirmLabel="Delete"
         busy={busy}

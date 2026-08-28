@@ -15,6 +15,7 @@ import { useAuth } from '@/store/auth'
 import { Badge, Button, Card, EmptyState, Modal, PageHeader } from '@/components/ui'
 import { HudTable, HudTableScroll } from '@/components/HudTableScroll'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { NavPolicyEditor } from '@/components/NavPolicyEditor'
 
 export function AdminRolesPage() {
   const { t } = useTranslation()
@@ -61,7 +62,7 @@ export function AdminRolesPage() {
   if (!isAdmin) {
     return (
       <div className="rounded border border-warn/40 bg-warn/10 px-5 py-8 text-sm text-warn">
-        Admin privileges required.
+        {t('adminPages.adminRequired')}
       </div>
     )
   }
@@ -87,7 +88,7 @@ export function AdminRolesPage() {
       void queryClient.invalidateQueries({ queryKey: ['admin-roles'] })
       void queryClient.invalidateQueries({ queryKey: ['admin-role-perms', selected.id] })
     } catch (e: any) {
-      setErr(e?.message || 'Failed to save permissions')
+      setErr(e?.message || t('adminPages.savePermissionsFailed'))
     } finally {
       setBusy(false)
     }
@@ -98,7 +99,7 @@ export function AdminRolesPage() {
     setErr('')
     try {
       if (!form.name.trim() || !form.display_name.trim()) {
-        throw new Error('Name and display name are required')
+        throw new Error(t('adminPages.roleNameRequired'))
       }
       await createAdminRole({
         name: form.name.trim(),
@@ -110,7 +111,7 @@ export function AdminRolesPage() {
       setForm({ name: '', display_name: '', description: '' })
       void queryClient.invalidateQueries({ queryKey: ['admin-roles'] })
     } catch (e: any) {
-      setErr(e?.message || 'Create failed')
+      setErr(e?.message || t('adminPages.createFailed'))
     } finally {
       setBusy(false)
     }
@@ -125,7 +126,7 @@ export function AdminRolesPage() {
       setDeleteTarget(null)
       void queryClient.invalidateQueries({ queryKey: ['admin-roles'] })
     } catch (e: any) {
-      setErr(e?.message || 'Delete failed')
+      setErr(e?.message || t('adminPages.deleteFailed'))
     } finally {
       setBusy(false)
     }
@@ -145,7 +146,7 @@ export function AdminRolesPage() {
               setCreating(true)
             }}
           >
-            Create role
+            {t('adminPages.createRole')}
           </Button>
         }
       />
@@ -156,14 +157,14 @@ export function AdminRolesPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="overflow-hidden">
           <div className="border-b border-line px-4 py-3 font-display text-sm tracking-[0.12em]">
-            ROLES ({roles.length})
+            {t('adminPages.rolesCount', { count: roles.length })}
           </div>
           <HudTableScroll maxHeightClass="max-h-[60vh]">
             <HudTable>
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>System</th>
+                  <th>{t('common.name')}</th>
+                  <th>{t('adminPages.colSystem')}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -182,7 +183,9 @@ export function AdminRolesPage() {
                       </td>
                       <td>
                         <Badge tone={r.is_system ? 'warn' : 'neutral'}>
-                          {r.is_system ? 'system' : 'custom'}
+                          {r.is_system
+                            ? t('adminPages.roleSystem')
+                            : t('adminPages.roleCustom')}
                         </Badge>
                       </td>
                       <td>
@@ -196,7 +199,7 @@ export function AdminRolesPage() {
                               setDeleteTarget(r)
                             }}
                           >
-                            Delete
+                            {t('common.delete')}
                           </Button>
                         ) : null}
                       </td>
@@ -206,7 +209,7 @@ export function AdminRolesPage() {
                 {!rolesQ.isLoading && !roles.length ? (
                   <tr>
                     <td colSpan={3}>
-                      <EmptyState>No roles.</EmptyState>
+                      <EmptyState>{t('adminPages.noRoles')}</EmptyState>
                     </td>
                   </tr>
                 ) : null}
@@ -218,7 +221,8 @@ export function AdminRolesPage() {
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <div className="font-display text-sm tracking-[0.12em]">
-              PERMISSIONS {selected ? `· ${selected.name}` : ''}
+              {t('adminPages.permissions')}
+              {selected ? ` · ${selected.name}` : ''}
             </div>
             {selected && !selected.is_system ? (
               <Button
@@ -227,17 +231,19 @@ export function AdminRolesPage() {
                 disabled={busy}
                 onClick={() => void savePerms()}
               >
-                {busy ? 'Saving…' : 'Save'}
+                {busy ? t('adminPages.saving') : t('common.save')}
               </Button>
             ) : null}
           </div>
           {!selected ? (
-            <EmptyState>Select a role to view permissions.</EmptyState>
+            <EmptyState>{t('adminPages.selectRoleForPermissions')}</EmptyState>
           ) : selected.is_system ? (
             <div className="space-y-3 p-5 text-sm text-text-dim">
-              <p>System role permissions are read-only.</p>
+              <p>{t('adminPages.systemRoleReadOnly')}</p>
               <p>
-                Loaded: {checked.length || allPermNames.length ? `${checked.length} assigned` : '—'}
+                {checked.length || allPermNames.length
+                  ? t('adminPages.assignedCount', { count: checked.length })
+                  : '—'}
               </p>
               <div className="flex flex-wrap gap-1">
                 {checked.map((p) => (
@@ -278,25 +284,33 @@ export function AdminRolesPage() {
                   </div>
                 </div>
               ))}
-              {!categories.length ? <EmptyState>No permission catalog.</EmptyState> : null}
+              {!categories.length ? (
+                <EmptyState>{t('adminPages.noPermissionCatalog')}</EmptyState>
+              ) : null}
             </div>
           )}
         </Card>
       </div>
 
-      <Modal open={creating} title="CREATE ROLE" onClose={() => setCreating(false)}>
+      <NavPolicyEditor roleName={selected?.name ?? null} />
+
+      <Modal
+        open={creating}
+        title={t('adminPages.createRole')}
+        onClose={() => setCreating(false)}
+      >
         <div className="space-y-3 p-5">
           <label className="block space-y-1">
-            <span className="hud-label">Name</span>
+            <span className="hud-label">{t('common.name')}</span>
             <input
               className="hud-field"
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="e.g. operator"
+              placeholder={t('adminPages.roleNamePlaceholder')}
             />
           </label>
           <label className="block space-y-1">
-            <span className="hud-label">Display name</span>
+            <span className="hud-label">{t('adminPages.displayName')}</span>
             <input
               className="hud-field"
               value={form.display_name}
@@ -304,7 +318,7 @@ export function AdminRolesPage() {
             />
           </label>
           <label className="block space-y-1">
-            <span className="hud-label">Description</span>
+            <span className="hud-label">{t('adminPages.description')}</span>
             <textarea
               className="hud-field min-h-[80px]"
               value={form.description}
@@ -313,10 +327,10 @@ export function AdminRolesPage() {
           </label>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" type="button" onClick={() => setCreating(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="button" disabled={busy} onClick={() => void create()}>
-              Create
+              {t('common.create')}
             </Button>
           </div>
         </div>
@@ -324,11 +338,12 @@ export function AdminRolesPage() {
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title="DELETE ROLE"
+        title={t('adminPages.deleteRole')}
         confirmText={deleteTarget?.name}
-        confirmLabel="Delete role"
+        confirmLabel={t('adminPages.deleteRole')}
+        cancelLabel={t('common.cancel')}
         busy={busy}
-        description="Remove this custom role. Users with only this role may lose access."
+        description={t('adminPages.deleteRoleDesc')}
         onClose={() => setDeleteTarget(null)}
         onConfirm={remove}
       />

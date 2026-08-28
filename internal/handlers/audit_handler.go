@@ -33,11 +33,14 @@ type auditLogView struct {
 	Result     string  `json:"result,omitempty"`
 	DurationMs float64 `json:"duration_ms,omitempty"`
 
-	Region   string `json:"region,omitempty"`
-	Country  string `json:"country,omitempty"`
-	Province string `json:"province,omitempty"`
-	City     string `json:"city,omitempty"`
-	ISP      string `json:"isp,omitempty"`
+	Region string `json:"region,omitempty"`
+	// RegionKind is set for non-public addresses so the client can localise them;
+	// public IPs resolve to Chinese-only ip2region names in Region.
+	RegionKind string `json:"region_kind,omitempty"`
+	Country    string `json:"country,omitempty"`
+	Province   string `json:"province,omitempty"`
+	City       string `json:"city,omitempty"`
+	ISP        string `json:"isp,omitempty"`
 }
 
 func toAuditLogView(log *store.AuditLog) auditLogView {
@@ -105,6 +108,7 @@ func toAuditLogView(log *store.AuditLog) auditLogView {
 	}
 	if loc := geoip.Default().Lookup(ip); loc != nil {
 		view.Region = loc.Label
+		view.RegionKind = string(loc.Kind)
 		view.Country = loc.Country
 		view.Province = loc.Province
 		view.City = loc.City

@@ -103,12 +103,11 @@ export function PageHeader({
   return (
     <div className="mb-2.5 flex w-full shrink-0 flex-col gap-2.5 sm:mb-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-3">
       <div className="min-w-0">
-        <div className="hud-label mb-0.5 sm:mb-1">Control plane</div>
-        <h1 className="font-display text-xl font-bold tracking-[0.1em] break-all text-text sm:text-2xl sm:tracking-[0.12em] md:text-3xl">
+        <h1 className="page-header-title font-display text-xl font-semibold tracking-[-0.01em] text-text">
           {title}
         </h1>
         {subtitle ? (
-          <p className="mt-1 line-clamp-2 text-xs text-text-dim sm:text-sm">{subtitle}</p>
+          <p className="mt-1 line-clamp-2 text-[13px] text-text-dim">{subtitle}</p>
         ) : null}
       </div>
       {action ? <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">{action}</div> : null}
@@ -130,7 +129,7 @@ export function StatCard({
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="min-w-0">
           <div className="hud-label text-[10px] sm:text-[11px]">{label}</div>
-          <div className="mt-1.5 font-display text-2xl font-bold tracking-wide text-cyan sm:mt-2 sm:text-3xl">
+          <div className="mt-1.5 font-display text-xl font-semibold tracking-[-0.01em] text-text sm:mt-2 sm:text-2xl">
             {value}
           </div>
         </div>

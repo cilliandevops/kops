@@ -11,6 +11,13 @@ export type ThemeColors = {
   green: string
   text: string
   textDim: string
+  /**
+   * Borders and fills default to a tint of `primary`, which reads as toy-like once the
+   * accent is saturated. Neutral themes set these to grays so only interactive elements
+   * carry color.
+   */
+  line?: string
+  mist?: string
 }
 
 /** Colors for Logs <pre> and xterm.js (Exec / Attach). */
@@ -31,6 +38,56 @@ export type Theme = {
 }
 
 export const BUILTIN_THEMES: Theme[] = [
+  {
+    id: 'graphite',
+    name: 'Graphite',
+    mode: 'light',
+    colors: {
+      bg: '#f4f4f5',
+      bgPanel: 'rgba(255, 255, 255, 0.98)',
+      bgPanelSolid: '#ffffff',
+      primary: '#2563eb',
+      primaryDim: '#1e40af',
+      secondary: '#b45309',
+      red: '#dc2626',
+      green: '#15803d',
+      text: '#18181b',
+      textDim: '#71717a',
+      line: 'rgba(24, 24, 27, 0.12)',
+      mist: 'rgba(24, 24, 27, 0.04)',
+    },
+    terminal: {
+      bg: '#fafafa',
+      fg: '#18181b',
+      cursor: '#2563eb',
+      selection: 'rgba(37, 99, 235, 0.22)',
+    },
+  },
+  {
+    id: 'carbon',
+    name: 'Carbon',
+    mode: 'dark',
+    colors: {
+      bg: '#131316',
+      bgPanel: 'rgba(31, 31, 36, 0.96)',
+      bgPanelSolid: '#1c1c20',
+      primary: '#7ea8ff',
+      primaryDim: '#4d78d8',
+      secondary: '#e0a35c',
+      red: '#f27272',
+      green: '#5fcf94',
+      text: '#ececf0',
+      textDim: '#9c9caa',
+      line: 'rgba(236, 236, 240, 0.14)',
+      mist: 'rgba(236, 236, 240, 0.05)',
+    },
+    terminal: {
+      bg: '#0f0f12',
+      fg: '#ececf0',
+      cursor: '#7ea8ff',
+      selection: 'rgba(126, 168, 255, 0.26)',
+    },
+  },
   {
     id: 'tron',
     name: 'TRON',
@@ -261,6 +318,13 @@ export function applyTheme(theme: Theme): void {
 
   root.dataset.theme = theme.id
   root.dataset.themeMode = theme.mode
+  // Neutral themes drop the HUD decoration (corner brackets, accent inset, bloom);
+  // the expressive themes keep it as their identity.
+  if (c.line) {
+    root.dataset.themeNeutral = '1'
+  } else {
+    delete root.dataset.themeNeutral
+  }
   // Keep native <textarea>/<input> chrome aligned with theme (esp. OS dark + light UI).
   root.style.colorScheme = theme.mode
 
@@ -268,7 +332,7 @@ export function applyTheme(theme: Theme): void {
   set('--color-panel', c.bgPanel)
   set('--color-panel-solid', c.bgPanelSolid)
   const light = theme.mode === 'light'
-  set('--color-line', hexToRgba(c.primary, light ? 0.38 : 0.26))
+  set('--color-line', c.line ?? hexToRgba(c.primary, light ? 0.38 : 0.26))
   set('--color-cyan', c.primary)
   set('--color-cyan-dim', c.primaryDim)
   set('--color-cyan-faint', hexToRgba(c.primary, light ? 0.2 : 0.18))
@@ -283,12 +347,14 @@ export function applyTheme(theme: Theme): void {
   set('--color-signal', c.secondary)
   set('--color-ink', c.text)
   set('--color-ink-soft', c.textDim)
-  set('--color-mist', hexToRgba(c.primary, light ? 0.11 : 0.09))
-  set('--color-ambient', hexToRgba(c.primary, light ? 0.14 : 0.1))
-  set('--color-grid-line', hexToRgba(c.primary, light ? 0.12 : 0.08))
+  set('--color-mist', c.mist ?? hexToRgba(c.primary, light ? 0.11 : 0.09))
+  set('--color-ambient', c.mist ?? hexToRgba(c.primary, light ? 0.14 : 0.1))
+  // Neutral themes drop the graph-paper overlay; panels on a gray field carry the depth.
+  set('--color-grid-line', c.line ? 'transparent' : hexToRgba(c.primary, light ? 0.12 : 0.08))
   set('--color-selection', hexToRgba(c.primary, light ? 0.26 : 0.32))
-  set('--color-glow', hexToRgba(c.primary, light ? 0.14 : 0.4))
-  set('--color-scroll-thumb', hexToRgba(c.primary, light ? 0.5 : 0.45))
+  // Neutral themes opt out of the accent bloom entirely; it is the loudest decorative tell.
+  set('--color-glow', c.line ? 'transparent' : hexToRgba(c.primary, light ? 0.14 : 0.4))
+  set('--color-scroll-thumb', c.line ?? hexToRgba(c.primary, light ? 0.5 : 0.45))
   set('--color-scroll-track', hexToRgba(c.bgPanelSolid, light ? 0.85 : 0.55))
 
   set('--color-term-bg', t.bg)

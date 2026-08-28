@@ -290,7 +290,7 @@ export function PodWorkbench({ pod, open, initialTab = 'logs', onClose, onDelete
 
       <ConfirmDialog
         open={confirmDelete}
-        title="DELETE POD"
+        title="Delete pod"
         confirmText={name}
         confirmLabel="Delete pod"
         busy={busy}
@@ -306,7 +306,7 @@ export function PodWorkbench({ pod, open, initialTab = 'logs', onClose, onDelete
 
       <ConfirmDialog
         open={confirmApply}
-        title="APPLY POD YAML"
+        title="Apply pod YAML"
         danger={false}
         confirmLabel="Apply changes"
         busy={busy}

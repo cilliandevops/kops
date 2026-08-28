@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import dayjs from 'dayjs'
-import { listEvents, listNamespaces } from '@/api/cluster'
+import { listEvents } from '@/api/cluster'
 import { useCluster } from '@/store/cluster'
+import { ALL_NAMESPACES, useNamespace } from '@/store/namespace'
 import { Badge, Card, EmptyState, HudSelect, PageHeader } from '@/components/ui'
 import { shouldSkipEnterAnim } from '@/lib/motionPrefs'
 import { useTranslation } from 'react-i18next'
@@ -11,18 +12,14 @@ import { useTranslation } from 'react-i18next'
 export function EventsPage() {
   const { t } = useTranslation()
   const { clusterId } = useCluster()
-  const [namespace, setNamespace] = useState('')
+  const { namespace } = useNamespace()
   const [type, setType] = useState('')
 
-  const nsQ = useQuery({
-    queryKey: ['namespaces', clusterId],
-    queryFn: listNamespaces,
-    enabled: Boolean(clusterId),
-  })
+  const scoped = namespace === ALL_NAMESPACES ? undefined : namespace
 
   const eventsQ = useQuery({
     queryKey: ['events', clusterId, namespace],
-    queryFn: () => listEvents({ namespace: namespace || undefined, limit: 100 }),
+    queryFn: () => listEvents({ namespace: scoped, limit: 100 }),
     enabled: Boolean(clusterId),
     refetchInterval: 30_000,
   })
@@ -36,29 +33,20 @@ export function EventsPage() {
       <PageHeader
         title={t('events.title')}
         subtitle={t('events.subtitle')}
-        action={<Badge tone="neutral">{events.length} events</Badge>}
+        action={<Badge tone="neutral">{t('events.count', { count: events.length })}</Badge>}
       />
 
       <Card className="mb-4 flex flex-wrap gap-3 p-4">
+        {/* Namespace comes from the scope strip; only the type filter is page-local.
+            Normal/Warning stay untranslated — they are the API's own type values. */}
         <HudSelect
-          aria-label="Namespace filter"
-          className="w-auto min-w-[160px]"
-          value={namespace}
-          onChange={setNamespace}
-          searchableWhen={0}
-          options={[
-            { value: '', label: 'All namespaces' },
-            ...(nsQ.data || []).map((ns) => ({ value: ns, label: ns })),
-          ]}
-        />
-        <HudSelect
-          aria-label="Event type"
+          aria-label={t('events.typeFilter')}
           className="w-auto min-w-[140px]"
           value={type}
           onChange={setType}
           searchableWhen={99}
           options={[
-            { value: '', label: 'All types' },
+            { value: '', label: t('events.allTypes') },
             { value: 'Normal', label: 'Normal' },
             { value: 'Warning', label: 'Warning' },
           ]}
@@ -99,7 +87,7 @@ export function EventsPage() {
         ))}
         {!eventsQ.isLoading && !events.length ? (
           <Card>
-            <EmptyState>No events matched.</EmptyState>
+            <EmptyState>{t('events.empty')}</EmptyState>
           </Card>
         ) : null}
       </div>

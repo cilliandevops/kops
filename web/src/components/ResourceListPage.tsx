@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { useCluster } from '@/store/cluster'
@@ -13,15 +14,22 @@ import { shouldSkipEnterAnim } from '@/lib/motionPrefs'
 
 export type ResourceColumn = {
   key: string
-  header: string
+  /** Literal header. Prefer `headerKey` — column arrays are plain data with no `t` in scope. */
+  header?: string
+  /** i18n key for the header, translated here by the renderer. */
+  headerKey?: string
   /** Hover hint — useful for abbreviated headers like %CPU/R */
   title?: string
+  /** i18n key for the hover hint. */
+  titleKey?: string
   render: (item: any) => ReactNode
 }
 
 export function ResourceListPage({
   title,
+  titleKey,
   subtitle,
+  subtitleKey,
   resourceKey,
   namespaced,
   queryFn,
@@ -31,8 +39,12 @@ export function ResourceListPage({
   creatable = true,
   pinFirstColumn: _pinFirstColumn = false,
 }: {
-  title: string
+  title?: string
+  /** i18n key for the page title; wins over `title`. */
+  titleKey?: string
   subtitle?: string
+  /** i18n key for the subtitle; wins over `subtitle`. */
+  subtitleKey?: string
   resourceKey: string
   namespaced?: boolean
   queryFn: () => Promise<any[]>
@@ -45,6 +57,7 @@ export function ResourceListPage({
   pinFirstColumn?: boolean
 }) {
   void _pinFirstColumn
+  const { t } = useTranslation()
   const { clusterId } = useCluster()
   const { namespace, isAllNamespaces } = useNamespace()
   const { canMutate } = useAuth()
@@ -57,29 +70,29 @@ export function ResourceListPage({
     enabled: Boolean(clusterId) && (!namespaced || namespace !== undefined),
   })
 
-  const cols = actions
+  const cols: ResourceColumn[] = actions
     ? [
         ...columns,
         {
           key: '_actions',
-          header: 'Actions',
+          headerKey: 'common.actions',
           render: (item: any) => actions(item, { refetch: () => void refetch() }),
         },
       ]
     : columns
 
+  const scopeSubtitle = namespaced
+    ? isAllNamespaces
+      ? t('common.allNamespaces')
+      : // `ns` is reserved by i18next (it selects a translation namespace).
+        t('resourceList.namespaceScope', { namespace })
+    : t('resourceList.clusterScoped')
+
   return (
     <ListPageFrame>
       <PageHeader
-        title={title}
-        subtitle={
-          subtitle ||
-          (namespaced
-            ? isAllNamespaces
-              ? 'All namespaces'
-              : `Namespace: ${namespace}`
-            : 'Cluster-scoped resources')
-        }
+        title={titleKey ? t(titleKey) : title || ''}
+        subtitle={subtitleKey ? t(subtitleKey) : subtitle || scopeSubtitle}
         action={
           <>
             {showCreate ? (
@@ -89,7 +102,7 @@ export function ResourceListPage({
                 className="min-h-9 px-3 py-1.5 text-xs"
                 onClick={() => setCreateOpen(true)}
               >
-                Create YAML
+                {t('resourceList.createYaml')}
               </Button>
             ) : null}
             {extraAction}
@@ -110,8 +123,11 @@ export function ResourceListPage({
           <thead>
             <tr>
               {cols.map((col) => (
-                <th key={col.key} title={col.title}>
-                  {col.header}
+                <th
+                  key={col.key}
+                  title={col.titleKey ? t(col.titleKey) : col.title}
+                >
+                  {col.headerKey ? t(col.headerKey) : col.header}
                 </th>
               ))}
             </tr>
@@ -133,11 +149,12 @@ export function ResourceListPage({
               <tr>
                 <td colSpan={cols.length}>
                   <EmptyState>
+                    {/* resourceKey stays as-is: it is the Kubernetes plural, not prose. */}
                     {namespaced
                       ? isAllNamespaces
-                        ? `No ${resourceKey} across all namespaces.`
-                        : `No ${resourceKey} in namespace ${namespace}.`
-                      : `No ${resourceKey} found.`}
+                        ? t('resourceList.emptyAll', { resource: resourceKey })
+                        : t('resourceList.emptyNs', { resource: resourceKey, namespace })
+                      : t('resourceList.emptyCluster', { resource: resourceKey })}
                   </EmptyState>
                 </td>
               </tr>
@@ -165,7 +182,7 @@ export function ageCellFrom(value: unknown) {
 }
 
 /** Pair of columns: Age then Created — drop into ResourceListPage columns arrays. */
-export const ageAndCreatedColumns = [
-  { key: 'age', header: 'Age', render: ageCell },
-  { key: 'created', header: 'Created', render: createdCell },
-] as const
+export const ageAndCreatedColumns: ResourceColumn[] = [
+  { key: 'age', headerKey: 'common.age', render: ageCell },
+  { key: 'created', headerKey: 'common.created', render: createdCell },
+]

@@ -5,7 +5,7 @@
 </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Release-v1.0.1-green?style=flat-square" alt="Release v1.0.1">
+  <img src="https://img.shields.io/badge/Release-v1.5.0-green?style=flat-square" alt="Release v1.5.0">
   <img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB?style=flat-square&logo=react" alt="React 19">
   <img src="https://img.shields.io/badge/Frontend-TypeScript%207-blue?style=flat-square&logo=typescript" alt="TypeScript 7">
   <img src="https://img.shields.io/badge/Frontend-Vite%208-blue?style=flat-square&logo=vite" alt="Vite 8">
@@ -51,7 +51,17 @@ CiliKube 是开源的 Kubernetes 多集群管理平台，技术栈为 React + Ty
 
 问清楚「现在怎么样、哪儿挂了」，再顺着线索进详情、日志或终端动手；AI 默认只读查证，不替你在集群里乱改。
 
-### v1.0.1（当前）
+### v1.5.0（当前）
+
+- **资源覆盖**：新增 15 种资源 —— ReplicaSet、ReplicationController、PodTemplate、Endpoints、EndpointSlice、IngressClass、ServiceCIDR、PriorityClass、RuntimeClass、Lease、Mutating/ValidatingWebhook、VolumeAttachment、CSIDriver、CSINode
+- **节点运维**：cordon / uncordon / drain（含驱逐进度）、污点与标签编辑
+- **环境 / 应用**：应用分组视图与访问范围管理
+- **UI 重构**：默认主题改为中性灰白，排版与间距重做、表格更紧凑；八套配色主题仍可选
+- **登录页**：重新设计的网格 / 粒子光场，会跟随页面布局避让
+- 字体精简为浏览器默认 + Maple Mono（选 `Maple Mono CN` 时全站统一一种字形）
+- 许可证变更为 AGPL-3.0-only
+
+### v1.0.1
 
 - **拓扑图**（Observe）：Ingress → Service → 工作负载 → Pod，Traffic 模式 RPS 流动（含分摊到 Pod）
 - **时间线**（Observe）：状态色带 + 实时 Event 标记；Showcase 预置演示历史
@@ -267,10 +277,10 @@ go build -o bin/cilikube cmd/server/main.go
 ### 使用官方镜像
 ```bash
 # 后端
-docker run -d --name cilikube -p 8080:8080 -v ~/.kube:/root/.kube:ro ghcr.io/ciliverse/cilikube:v1.0.1
+docker run -d --name cilikube -p 8080:8080 -v ~/.kube:/root/.kube:ro ghcr.io/ciliverse/cilikube:v1.5.0
 
 # 前端
-docker run -d --name cilikube-web -p 80:80 ghcr.io/ciliverse/cilikube-web:v1.0.1
+docker run -d --name cilikube-web -p 80:80 ghcr.io/ciliverse/cilikube-web:v1.5.0
 ```
 
 ### 使用 Docker Compose

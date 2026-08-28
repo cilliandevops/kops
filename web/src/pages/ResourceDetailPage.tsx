@@ -27,6 +27,7 @@ import { podMetricsKey, usePodMetricsMap } from '@/hooks/usePodMetricsMap'
 import { PromTimeChart } from '@/components/PromTimeChart'
 import { ScaleDialog } from '@/components/ScaleDialog'
 import { PodWorkbench } from '@/components/PodWorkbench'
+import { NodeOpsControls } from '@/components/NodeOpsControls'
 import { buildInvestigateHref, kindFromResource } from '@/lib/aiInvestigate'
 
 type Tab = 'summary' | 'events' | 'yaml' | 'metrics' | 'related'
@@ -55,6 +56,22 @@ const KIND_MAP: Record<string, string> = {
   clusterroles: 'ClusterRole',
   clusterrolebindings: 'ClusterRoleBinding',
   nodes: 'Node',
+  namespaces: 'Namespace',
+  replicasets: 'ReplicaSet',
+  replicationcontrollers: 'ReplicationController',
+  podtemplates: 'PodTemplate',
+  endpoints: 'Endpoints',
+  endpointslices: 'EndpointSlice',
+  leases: 'Lease',
+  ingressclasses: 'IngressClass',
+  servicecidrs: 'ServiceCIDR',
+  priorityclasses: 'PriorityClass',
+  runtimeclasses: 'RuntimeClass',
+  mutatingwebhookconfigurations: 'MutatingWebhookConfiguration',
+  validatingwebhookconfigurations: 'ValidatingWebhookConfiguration',
+  volumeattachments: 'VolumeAttachment',
+  csidrivers: 'CSIDriver',
+  csinodes: 'CSINode',
 }
 
 export function ResourceDetailPage({
@@ -326,6 +343,7 @@ export function ResourceDetailPage({
                 </Button>
               </>
             ) : null}
+            {resource === 'nodes' && obj ? <NodeOpsControls node={obj} /> : null}
             {supportsScale && canWrite ? (
               <Button
                 variant="outline"
@@ -642,7 +660,7 @@ export function ResourceDetailPage({
                 <thead>
                   <tr>
                     <th>Kind</th>
-                    <th>Name</th>
+                    <th>{t('common.name')}</th>
                     <th>Phase</th>
                   </tr>
                 </thead>
@@ -702,7 +720,7 @@ export function ResourceDetailPage({
 
       <ConfirmDialog
         open={confirmDelete}
-        title="DELETE RESOURCE"
+        title="Delete resource"
         confirmText={name}
         confirmLabel="Delete"
         busy={busy}
@@ -712,7 +730,7 @@ export function ResourceDetailPage({
       />
       <ConfirmDialog
         open={confirmApply}
-        title="APPLY YAML"
+        title="Apply YAML"
         danger={false}
         confirmLabel="Apply"
         busy={busy}
@@ -722,7 +740,7 @@ export function ResourceDetailPage({
       />
       <ConfirmDialog
         open={confirmRestart}
-        title="RESTART WORKLOAD"
+        title="Restart workload"
         danger={false}
         confirmLabel="Restart"
         busy={busy}

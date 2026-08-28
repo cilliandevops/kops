@@ -57,7 +57,7 @@ export function ProxyConsolePage() {
         setOut((prev) => `# HTTP ${res.status} ${method}\n${prev}`)
       }
     } catch (e: any) {
-      setOut(e?.message || 'Proxy request failed')
+      setOut(e?.message || t('proxy.requestFailed'))
     } finally {
       setBusy(false)
       setConfirmOpen(false)
@@ -75,7 +75,7 @@ export function ProxyConsolePage() {
   if (!canEdit) {
     return (
       <div className="rounded border border-warn/40 bg-warn/10 px-5 py-8 text-sm text-warn">
-        Editor or admin role required for API proxy console.
+        {t('proxy.editorRequired')}
       </div>
     )
   }
@@ -89,9 +89,9 @@ export function ProxyConsolePage() {
       <Card className="space-y-3 p-5">
         <div className="flex flex-wrap gap-3">
           <label className="block space-y-1">
-            <span className="hud-label">Method</span>
+            <span className="hud-label">{t('proxy.method')}</span>
             <HudSelect
-              aria-label="HTTP method"
+              aria-label={t('proxy.method')}
               className="w-auto min-w-[120px]"
               value={method}
               onChange={(v) => setMethod(v as HttpMethod)}
@@ -103,7 +103,7 @@ export function ProxyConsolePage() {
             />
           </label>
           <label className="min-w-0 flex-1 space-y-1">
-            <span className="hud-label">Kubernetes API path</span>
+            <span className="hud-label">{t('proxy.path')}</span>
             <input
               className="hud-field font-mono text-xs"
               value={path}
@@ -114,7 +114,7 @@ export function ProxyConsolePage() {
         </div>
         {method !== 'GET' ? (
           <label className="block space-y-1">
-            <span className="hud-label">Request body (JSON)</span>
+            <span className="hud-label">{t('proxy.body')}</span>
             <textarea
               className="hud-field min-h-[140px] font-mono text-xs"
               value={body}
@@ -124,26 +124,21 @@ export function ProxyConsolePage() {
           </label>
         ) : null}
         <Button type="button" disabled={busy} onClick={onSubmit}>
-          {busy ? 'Calling…' : `${method} via proxy`}
+          {busy ? t('proxy.calling') : t('proxy.sendVia', { method })}
         </Button>
         <pre className="max-h-[50vh] overflow-auto rounded border border-line term-surface px-3 py-3 font-mono text-[11px] whitespace-pre-wrap">
-          {out || '# response will appear here'}
+          {out || t('proxy.responsePlaceholder')}
         </pre>
       </Card>
 
       <ConfirmDialog
         open={confirmOpen}
-        title={`${method} VIA PROXY`}
+        title={t('proxy.confirmTitle', { method })}
         danger={method === 'DELETE'}
-        confirmLabel={`Send ${method}`}
+        confirmLabel={t('proxy.confirmLabel', { method })}
+        cancelLabel={t('common.cancel')}
         busy={busy}
-        description={
-          <span>
-            Send <span className="font-semibold text-text">{method}</span> to{' '}
-            <span className="font-mono text-cyan">{path}</span> through the Kubernetes API proxy?
-            This may mutate cluster state.
-          </span>
-        }
+        description={<span>{t('proxy.confirmBody', { method, path })}</span>}
         onClose={() => setConfirmOpen(false)}
         onConfirm={run}
       />

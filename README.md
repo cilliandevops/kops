@@ -5,7 +5,7 @@
 </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Release-v1.0.1-green?style=flat-square" alt="Release v1.0.1">
+  <img src="https://img.shields.io/badge/Release-v1.5.0-green?style=flat-square" alt="Release v1.5.0">
   <img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB?style=flat-square&logo=react" alt="React 19">
   <img src="https://img.shields.io/badge/Frontend-TypeScript%207-blue?style=flat-square&logo=typescript" alt="TypeScript 7">
   <img src="https://img.shields.io/badge/Frontend-Vite%208-blue?style=flat-square&logo=vite" alt="Vite 8">
@@ -51,7 +51,17 @@ In one line:
 
 Ask “how is it now / what’s broken,” follow resource clues into detail, logs, or a terminal — AI stays read-only by default and does not mutate the cluster for you.
 
-### v1.0.1 (current)
+### v1.5.0 (current)
+
+- **Resource coverage**: 15 more kinds — ReplicaSets, ReplicationControllers, PodTemplates, Endpoints, EndpointSlices, IngressClasses, ServiceCIDRs, PriorityClasses, RuntimeClasses, Leases, Mutating/ValidatingWebhooks, VolumeAttachments, CSIDrivers, CSINodes
+- **Node operations**: cordon / uncordon / drain with eviction progress, taint and label editing
+- **Environments / Applications**: app-group surfaces and access-scope management
+- **UI overhaul**: neutral gray-white default theme, reworked typography and spacing, denser tables; the eight accent themes stay available
+- **Login**: redesigned lattice / particle field that reacts to the page layout
+- Fonts simplified to browser default + Maple Mono (`Maple Mono CN` applies one face to every surface)
+- License moved to AGPL-3.0-only
+
+### v1.0.1
 
 - **Topology** (Observe): Ingress → Service → Workload → Pod graph, Traffic mode with RPS flow (incl. fan-out to pods)
 - **Timeline** (Observe): status segments + live Event markers; Showcase backfills demo history
@@ -267,10 +277,10 @@ go build -o bin/cilikube cmd/server/main.go
 ### Using Official Images
 ```bash
 # Backend
-docker run -d --name cilikube -p 8080:8080 -v ~/.kube:/root/.kube:ro ghcr.io/ciliverse/cilikube:v1.0.1
+docker run -d --name cilikube -p 8080:8080 -v ~/.kube:/root/.kube:ro ghcr.io/ciliverse/cilikube:v1.5.0
 
 # Frontend
-docker run -d --name cilikube-web -p 80:80 ghcr.io/ciliverse/cilikube-web:v1.0.1
+docker run -d --name cilikube-web -p 80:80 ghcr.io/ciliverse/cilikube-web:v1.5.0
 ```
 
 ### Using Docker Compose

@@ -8,6 +8,7 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent,
+  type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronDown } from 'lucide-react'
@@ -28,6 +29,10 @@ type Props = {
   disabled?: boolean
   /** Show filter input when option count exceeds this (default 8). Set 0 to always show. */
   searchableWhen?: number
+  /** Icon or mark shown before the selected label (does not affect value). */
+  leading?: ReactNode
+  /** Floor for the portaled menu width so long option labels stay readable. */
+  menuMinWidth?: number
   'aria-label'?: string
 }
 
@@ -53,6 +58,8 @@ export function HudSelect({
   placeholder = 'Select…',
   disabled,
   searchableWhen = 8,
+  leading,
+  menuMinWidth = 140,
   'aria-label': ariaLabel,
 }: Props) {
   const listId = useId()
@@ -97,7 +104,7 @@ export function HudSelect({
       spaceBelow < 120 && spaceAbove > spaceBelow ? 'top' : 'bottom'
     const available = placement === 'bottom' ? spaceBelow : spaceAbove
     const maxHeight = Math.max(96, Math.min(MENU_MAX_H, available))
-    const width = Math.max(rect.width, 140)
+    const width = Math.min(vw - 16, Math.max(rect.width, menuMinWidth))
     let left = rect.left
     if (left + width > vw - 8) left = Math.max(8, vw - width - 8)
     if (left < 8) left = 8
@@ -119,7 +126,7 @@ export function HudSelect({
         maxHeight,
       })
     }
-  }, [])
+  }, [menuMinWidth])
 
   useLayoutEffect(() => {
     if (!open) return
@@ -298,8 +305,9 @@ export function HudSelect({
         aria-expanded={open}
         aria-controls={listId}
         aria-label={ariaLabel}
+        title={selected?.label || placeholder || ariaLabel}
         className={cn(
-          'hud-select hud-select-trigger flex w-full items-center justify-between gap-2 text-left',
+          'hud-select hud-select-trigger flex w-full items-center justify-between gap-1.5 text-left',
           open && 'hud-select-open',
           disabled && 'opacity-50',
         )}
@@ -309,7 +317,8 @@ export function HudSelect({
         }}
         onKeyDown={onTriggerKey}
       >
-        <span className={cn('min-w-0 truncate', !selected && 'text-text-dim')}>
+        {leading ? <span className="hud-select-leading shrink-0">{leading}</span> : null}
+        <span className={cn('min-w-0 flex-1 truncate', !selected && 'text-text-dim')}>
           {selected?.label || placeholder}
         </span>
         <ChevronDown

@@ -1,18 +1,15 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowUp, Bot, CornerDownLeft, Plus, Slash, Square, Terminal, Trash2, Zap } from 'lucide-react'
+import { ArrowUp, CornerDownLeft, Plus, Slash, Square, Terminal, Zap } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { AiResourceRef } from '@/api/ai'
+import { AiScopePicker } from '@/components/AiScopePicker'
 import { AiSkillEditor } from '@/components/AiSkillEditor'
 import {
-  defaultAiAgent,
   filterSkillsByQuery,
   parseSlashToken,
   skillGroupLabel,
-  skillsByGroup,
-  type AiAgentMeta,
   type AiSkillDef,
-  type AiSkillGroup,
   type CustomSkillInput,
 } from '@/lib/aiSkills'
 import { cn } from '@/lib/utils'
@@ -24,12 +21,9 @@ type Props = {
   onStop?: () => void
   busy?: boolean
   ready?: boolean
-  namespaceLabel: string
-  clusterLabel: string
   err?: string
   evidence?: AiResourceRef[]
   skills?: AiSkillDef[]
-  agent?: AiAgentMeta
   landing?: boolean
   onSaveCustomSkill?: (input: CustomSkillInput & { id?: string }) => AiSkillDef | null
   onDeleteCustomSkill?: (id: string) => void
@@ -43,25 +37,19 @@ export function AiComposer({
   onStop,
   busy,
   ready,
-  namespaceLabel,
-  clusterLabel,
   err,
   evidence,
   skills = [],
-  agent,
   landing,
   onSaveCustomSkill,
   onDeleteCustomSkill,
 }: Props) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
-  const resolvedAgent = agent || defaultAiAgent(lang)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const composingRef = useRef(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const maxHeight = landing ? 200 : 180
-  const groups = useMemo(() => skillsByGroup(skills, lang), [skills, lang])
-  const [activeGroup, setActiveGroup] = useState<AiSkillGroup>('combo')
   const [slashOpen, setSlashOpen] = useState(false)
   const [slashQuery, setSlashQuery] = useState('')
   const [slashStart, setSlashStart] = useState(0)
@@ -69,18 +57,6 @@ export function AiComposer({
   const [menuForced, setMenuForced] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
   const [editing, setEditing] = useState<AiSkillDef | null>(null)
-
-  useEffect(() => {
-    if (!groups.length) return
-    if (!groups.some((g) => g.group === activeGroup)) {
-      setActiveGroup(groups[0].group)
-    }
-  }, [groups, activeGroup])
-
-  const activeSkills = useMemo(() => {
-    const hit = groups.find((g) => g.group === activeGroup)
-    return hit?.skills || groups[0]?.skills || []
-  }, [groups, activeGroup])
 
   const slashMatches = useMemo(
     () => filterSkillsByQuery(skills, slashQuery, lang).slice(0, 8),
@@ -251,104 +227,10 @@ export function AiComposer({
         </div>
       ) : null}
 
-      <form className={cn('ai-ops-composer', landing && skills.length && 'has-probes')} onSubmit={submit}>
-        {landing && skills.length ? (
-          <div className="ai-ops-skills">
-            <div className="ai-ops-skills-top">
-              <div className="ai-ops-skills-tabs" role="tablist" aria-label={t('ai.skillGroups')}>
-                {groups.map((g) => (
-                  <button
-                    key={g.group}
-                    type="button"
-                    role="tab"
-                    aria-selected={g.group === activeGroup}
-                    className={cn('ai-ops-skills-tab', g.group === activeGroup && 'is-active')}
-                    onClick={() => setActiveGroup(g.group)}
-                  >
-                    {g.label}
-                    <span className="ai-ops-skills-tab-count">{g.skills.length}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="ai-ops-skills-top-actions">
-                {canManageCustom ? (
-                  <button
-                    type="button"
-                    className="ai-ops-skill-create"
-                    disabled={busy}
-                    onClick={() => openCreateEditor(null)}
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    {t('ai.custom')}
-                  </button>
-                ) : null}
-                <span className="ai-ops-agent-pill" title={resolvedAgent.blurb}>
-                  <Bot className="h-3.5 w-3.5" />
-                  {resolvedAgent.name}
-                </span>
-              </div>
-            </div>
-
-            <div className="ai-ops-skills-panel" role="tabpanel">
-              {activeGroup === 'custom' && activeSkills.length === 0 ? (
-                <div className="ai-ops-skills-empty">
-                  <p>{t('ai.noCustomSkills')}</p>
-                  {canManageCustom ? (
-                    <button type="button" className="ai-ops-skill-create is-ghost" onClick={() => openCreateEditor(null)}>
-                      <Plus className="h-3.5 w-3.5" />
-                      {t('ai.writeCustomSkill')}
-                    </button>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="ai-ops-skills-grid">
-                  {activeSkills.map((s) => (
-                    <div key={s.id} className={cn('ai-ops-skill-wrap', s.custom && 'is-custom')}>
-                      <button
-                        type="button"
-                        className="ai-ops-skill"
-                        disabled={busy}
-                        title={s.blurb}
-                        onClick={() => applySkill(s)}
-                        onContextMenu={
-                          s.custom && canManageCustom
-                            ? (e) => {
-                                e.preventDefault()
-                                openCreateEditor(s)
-                              }
-                            : undefined
-                        }
-                      >
-                        <span className="ai-ops-skill-code">{s.code}</span>
-                        <span className="ai-ops-skill-label">{s.label}</span>
-                      </button>
-                      {s.custom && onDeleteCustomSkill ? (
-                        <button
-                          type="button"
-                          className="ai-ops-skill-del"
-                          title={t('ai.delete')}
-                          aria-label={t('ai.deleteSkill', { label: s.label })}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            onDeleteCustomSkill(s.id)
-                          }}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              )}
-              <p className="ai-ops-skills-hint">
-                {t('ai.slashHint')}
-                {canManageCustom ? t('ai.slashHintEdit') : null}
-              </p>
-            </div>
-          </div>
-        ) : null}
-
+      <form
+        className={cn('ai-ops-composer', landing && skills.length && 'has-probes')}
+        onSubmit={submit}
+      >
         <div className="ai-ops-composer-main">
           {showSlashMenu ? (
             <div ref={menuRef} className="ai-ops-slash" role="listbox" aria-label={t('ai.skillList')}>
@@ -434,10 +316,6 @@ export function AiComposer({
           />
           <div className="ai-ops-composer-bar">
             <div className="ai-ops-composer-meta">
-              <span className="ai-ops-agent-inline" title={resolvedAgent.blurb}>
-                <Bot className="h-3 w-3" />
-                {resolvedAgent.name}
-              </span>
               <button
                 type="button"
                 className="ai-ops-slash-trigger"
@@ -457,25 +335,21 @@ export function AiComposer({
                   title={t('ai.createCustomSkill')}
                 >
                   <Plus className="h-3 w-3" />
-                  {t('ai.custom')}
                 </button>
               ) : null}
-              <span className="ai-ops-hint">
-                {namespaceLabel}
-                <span className="ai-ops-hint-sep">·</span>
-                {clusterLabel}
-              </span>
+              <AiScopePicker disabled={busy} />
             </div>
             {busy ? (
-              <button type="button" className="ai-ops-send is-stop" onClick={onStop}>
+              <button type="button" className="ai-ops-send is-stop" onClick={onStop} title={t('ai.stop')}>
                 <Square className="h-3.5 w-3.5" />
-                {t('ai.stop')}
+                <span>{t('ai.stop')}</span>
               </button>
             ) : (
               <button
                 type="submit"
                 className="ai-ops-send"
                 disabled={!ready || !value.trim() || (showSlashMenu && slashMatches.length > 0)}
+                title={t('ai.send')}
               >
                 <ArrowUp className="h-4 w-4" />
                 <span>{t('ai.send')}</span>
@@ -498,8 +372,16 @@ export function AiComposer({
             if (!saved) return
             setEditorOpen(false)
             setEditing(null)
-            setActiveGroup('custom')
           }}
+          onDelete={
+            onDeleteCustomSkill
+              ? (id) => {
+                  onDeleteCustomSkill(id)
+                  setEditorOpen(false)
+                  setEditing(null)
+                }
+              : undefined
+          }
         />
       ) : null}
     </div>

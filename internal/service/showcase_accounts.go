@@ -10,6 +10,8 @@ import (
 
 // EnsureShowcaseAccounts resets public demo users/passwords when CILIKUBE_SHOWCASE=1.
 // Local/dev without the flag is untouched. Fail-closed: no-op outside showcase.
+// Even under the flag it never overwrites an account an operator has personalised —
+// see adoptableForShowcase.
 func EnsureShowcaseAccounts(mainStore store.Store) error {
 	if !k8s.IsShowcase() {
 		return nil
@@ -31,8 +33,24 @@ func EnsureShowcaseAccounts(mainStore store.Store) error {
 	return nil
 }
 
+// adoptableForShowcase reports whether an existing account may be overwritten with
+// demo credentials. A pristine seeded account (still forced to change its password)
+// or an account already carrying the demo email is fair game; anything else belongs
+// to a real operator who has personalised it, and clobbering it would lock them out.
+func adoptableForShowcase(user *store.User, demoEmail string) bool {
+	return user.Email == demoEmail || user.MustChangePassword
+}
+
 func upsertShowcaseUser(mainStore store.Store, username, email, password, roleName string) error {
 	user, err := mainStore.GetUserByUsername(username)
+	if err == nil && user != nil && !adoptableForShowcase(user, email) {
+		slog.Warn("showcase: refusing to overwrite a personalised account",
+			"username", username,
+			"email", user.Email,
+			"hint", "delete the account or set CILIKUBE_SHOWCASE only on the public exhibit host",
+		)
+		return nil
+	}
 	if err != nil || user == nil {
 		user = &store.User{
 			Username: username,

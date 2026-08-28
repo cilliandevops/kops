@@ -255,3 +255,42 @@ type TimelineStatusSample struct {
 func (TimelineStatusSample) TableName() string {
 	return "timeline_status_samples"
 }
+
+// Environment binds a cluster + namespace + purpose (test/staging/prod/other).
+type Environment struct {
+	ID          string    `gorm:"type:varchar(36);primary_key" json:"id"`
+	Name        string    `gorm:"type:varchar(100);not null;uniqueIndex:idx_env_name" json:"name"`
+	ClusterID   string    `gorm:"type:varchar(36);not null;index" json:"cluster_id"`
+	Namespace   string    `gorm:"type:varchar(253);not null" json:"namespace"`
+	Purpose     string    `gorm:"type:varchar(32);not null;index" json:"purpose"`
+	Description string    `gorm:"type:text" json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+func (Environment) TableName() string { return "environments" }
+
+// AccessGrant scopes a user to a cluster and optional namespace.
+// Empty Namespace means the whole cluster.
+type AccessGrant struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	UserID    uint      `gorm:"not null;uniqueIndex:idx_grant_user_scope" json:"user_id"`
+	ClusterID string    `gorm:"type:varchar(36);not null;uniqueIndex:idx_grant_user_scope" json:"cluster_id"`
+	Namespace string    `gorm:"type:varchar(253);not null;uniqueIndex:idx_grant_user_scope" json:"namespace"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func (AccessGrant) TableName() string { return "access_grants" }
+
+// RoleNavPolicy hides sidebar entries for a role. It is a blocklist so menus
+// added by later releases show up without an admin editing every role, and it
+// only shapes the sidebar — API access is still governed by Casbin.
+type RoleNavPolicy struct {
+	RoleName string `gorm:"type:varchar(50);primaryKey" json:"role_name"`
+	// JSON arrays of nav group titleKeys / item paths.
+	HiddenGroups string    `gorm:"type:text" json:"-"`
+	HiddenItems  string    `gorm:"type:text" json:"-"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
+func (RoleNavPolicy) TableName() string { return "role_nav_policies" }

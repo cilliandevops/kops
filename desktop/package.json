@@ -1,6 +1,6 @@
 {
   "name": "cilikube-desktop",
-  "version": "1.0.1",
+  "version": "1.5.0",
   "private": true,
   "description": "CiliKube desktop shell (Electron + Go sidecar)",
   "main": "dist/main.js",

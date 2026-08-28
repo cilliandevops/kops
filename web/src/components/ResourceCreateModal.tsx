@@ -102,7 +102,7 @@ export function ResourceCreateModal({ open, resource, namespaced = true, onClose
       </Modal>
       <ConfirmDialog
         open={confirm}
-        title="CREATE RESOURCE"
+        title="Create resource"
         danger={false}
         confirmLabel="Create"
         busy={busy}

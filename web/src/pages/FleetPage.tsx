@@ -64,13 +64,13 @@ function Metric({
   clickTitle?: string
 }) {
   const valueClass = cn(
-    'mt-0.5 font-mono text-sm font-semibold',
+    'mt-0.5 font-mono text-[13px] font-semibold',
     warn ? 'text-warn' : 'text-text',
     onClick && 'underline decoration-dotted underline-offset-2 hover:text-cyan',
   )
   return (
     <div className="min-w-0">
-      <div className="text-[0.65rem] uppercase tracking-[0.12em] text-text-dim">{label}</div>
+      <div className="hud-label">{label}</div>
       {onClick ? (
         <button
           type="button"
@@ -288,14 +288,12 @@ export function FleetPage() {
           ].map((item) => (
             <div
               key={item.label}
-              className="rounded-lg border border-line/80 bg-panel-solid/80 px-3 py-2.5"
+              className="app-surface rounded-md px-3 py-2.5"
             >
-              <div className="text-[0.65rem] uppercase tracking-[0.12em] text-text-dim">
-                {item.label}
-              </div>
+              <div className="hud-label">{item.label}</div>
               <div
                 className={cn(
-                  'mt-1 font-mono text-lg font-semibold',
+                  'mt-1 font-mono text-base font-semibold',
                   item.warn ? 'text-warn' : 'text-text',
                 )}
               >
@@ -333,11 +331,9 @@ export function FleetPage() {
                 }
               }}
               className={cn(
-                'group flex min-w-0 cursor-pointer flex-col gap-3 rounded-xl border p-4 text-left transition',
-                'bg-panel-solid hover:border-cyan/40 hover:bg-mist/40',
-                isCurrent
-                  ? 'border-cyan/45 shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-cyan)_20%,transparent)]'
-                  : 'border-line',
+                'app-surface group flex min-w-0 cursor-pointer flex-col gap-3 rounded-md p-4 text-left transition',
+                'hover:border-cyan/40',
+                isCurrent && 'border-cyan/45',
                 !card.reachable && 'opacity-90',
                 switching && 'pointer-events-none opacity-70',
               )}
@@ -348,7 +344,7 @@ export function FleetPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="truncate font-display text-base font-bold tracking-wide">
+                    <h2 className="truncate font-display text-[15px] font-bold tracking-[0.04em]">
                       {card.name}
                     </h2>
                     {isCurrent ? <Badge tone="accent">{t('fleet.current')}</Badge> : null}
@@ -376,8 +372,8 @@ export function FleetPage() {
                 </div>
               </div>
 
-              <div className="min-w-0 rounded-lg border border-line/60 bg-mist/15 px-2.5 py-1.5">
-                <div className="text-[0.6rem] uppercase tracking-[0.12em] text-text-dim">
+              <div className="min-w-0 rounded-md border border-line/60 bg-mist/15 px-2.5 py-1.5">
+                <div className="hud-label">
                   {t('fleet.apiServer')}
                 </div>
                 <div
@@ -394,7 +390,7 @@ export function FleetPage() {
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                 >
-                  <span className="mr-0.5 text-[0.65rem] uppercase tracking-[0.12em] text-text-dim">
+                  <span className="hud-label mr-0.5">
                     {t('fleet.env')}
                   </span>
                   {ENV_PRESETS.map((env) => {

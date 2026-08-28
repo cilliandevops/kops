@@ -98,6 +98,12 @@ var logicalPermissionMap = map[string][]casbinPolicy{
 		{Object: "/api/v1/timeline", Action: "GET"},
 		{Object: "/api/v1/timeline/*", Action: "GET"},
 	},
+	"read:environments":  {{Object: "/api/v1/environments/*", Action: "GET"}},
+	"write:environments": {{Object: "/api/v1/environments/*", Action: "*"}},
+	"read:applications": {
+		{Object: "/api/v1/applications", Action: "GET"},
+		{Object: "/api/v1/applications/*", Action: "GET"},
+	},
 }
 
 // KnownLogicalPermissions returns all logical permission names in stable order.
@@ -114,6 +120,7 @@ func KnownLogicalPermissions() []string {
 		"read:rbac", "write:rbac",
 		"admin:users", "admin:roles", "admin:system", "admin:audit",
 		"read:topology", "read:timeline",
+		"read:environments", "write:environments", "read:applications",
 	}
 	return order
 }

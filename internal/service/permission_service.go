@@ -78,6 +78,9 @@ func systemViewerPolicies() []rolePolicy {
 
 		{"viewer", "/api/v1/helm/releases", "GET"},
 		{"viewer", "/api/v1/helm/releases/:namespace/:name", "GET"},
+		{"viewer", "/api/v1/helm/repos", "GET"},
+		{"viewer", "/api/v1/helm/charts", "GET"},
+		{"viewer", "/api/v1/helm/chart", "GET"},
 
 		{"viewer", "/api/v1/informers/:name", "GET"},
 		{"viewer", "/api/v1/monitoring/:name", "GET"},
@@ -93,6 +96,12 @@ func systemViewerPolicies() []rolePolicy {
 		{"viewer", "/api/v1/clusters/active", "GET"},
 		{"viewer", "/api/v1/clusters/active", "POST"},
 
+		{"viewer", "/api/v1/environments", "GET"},
+		{"viewer", "/api/v1/environments/:id", "GET"},
+		{"viewer", "/api/v1/applications", "GET"},
+		{"viewer", "/api/v1/applications/:namespace/:name", "GET"},
+		{"viewer", "/api/v1/me/access", "GET"},
+
 		{"viewer", "/api/v1/topology", "GET"},
 		{"viewer", "/api/v1/topology/traffic", "GET"},
 		{"viewer", "/api/v1/timeline", "GET"},
@@ -107,6 +116,9 @@ func systemViewerPolicies() []rolePolicy {
 		{"viewer", "/api/v1/profile", "GET"},
 		{"viewer", "/api/v1/profile", "PUT"},
 		{"viewer", "/api/v1/profile/:name", "GET"},
+
+		// Every user reads their own sidebar policy; only admins edit them.
+		{"viewer", "/api/v1/nav/policy", "GET"},
 
 		{"viewer", "/api/v1/ai/status", "GET"},
 		{"viewer", "/api/v1/ai/chat", "POST"},
@@ -177,6 +189,12 @@ func systemEditorPolicies() []rolePolicy {
 		{"editor", "/api/v1/clusters/active", "GET"},
 		{"editor", "/api/v1/clusters/active", "POST"},
 
+		{"editor", "/api/v1/environments", "*"},
+		{"editor", "/api/v1/environments/:id", "*"},
+		{"editor", "/api/v1/applications", "GET"},
+		{"editor", "/api/v1/applications/:namespace/:name", "GET"},
+		{"editor", "/api/v1/me/access", "GET"},
+
 		{"editor", "/api/v1/topology", "GET"},
 		{"editor", "/api/v1/topology/traffic", "GET"},
 		{"editor", "/api/v1/timeline", "GET"},
@@ -194,6 +212,8 @@ func systemEditorPolicies() []rolePolicy {
 		{"editor", "/api/v1/auth/logout", "POST"},
 		{"editor", "/api/v1/profile", "*"},
 		{"editor", "/api/v1/profile/:name", "*"},
+
+		{"editor", "/api/v1/nav/policy", "GET"},
 	}
 
 	writeResources := []string{

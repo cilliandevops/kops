@@ -232,7 +232,7 @@ export function ResourceYamlModal({ open, resource, item, namespaced = true, onC
 
       <ConfirmDialog
         open={confirmDelete}
-        title="DELETE RESOURCE"
+        title="Delete resource"
         confirmText={name}
         confirmLabel="Delete permanently"
         busy={busy}
@@ -251,7 +251,7 @@ export function ResourceYamlModal({ open, resource, item, namespaced = true, onC
 
       <ConfirmDialog
         open={confirmApply}
-        title="APPLY YAML"
+        title="Apply YAML"
         danger={false}
         confirmLabel="Apply changes"
         busy={busy}

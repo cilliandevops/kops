@@ -10,6 +10,12 @@ import {
   updateAdminUserStatus,
   type AdminUser,
 } from '@/api/admin'
+import { listClusters } from '@/api/cluster'
+import {
+  createAccessGrant,
+  deleteAccessGrant,
+  listAccessGrants,
+} from '@/api/environment'
 import { useAuth } from '@/store/auth'
 import { Badge, Button, EmptyState, Modal, PageHeader } from '@/components/ui'
 import { HudTable, HudTablePanel, ListPageFrame } from '@/components/HudTableScroll'
@@ -28,6 +34,9 @@ export function AdminUsersPage() {
   const { isAdmin } = useAuth()
   const queryClient = useQueryClient()
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
+  const [grantUser, setGrantUser] = useState<AdminUser | null>(null)
+  const [grantCluster, setGrantCluster] = useState('')
+  const [grantNs, setGrantNs] = useState('')
   const [editTarget, setEditTarget] = useState<AdminUser | null>(null)
   const [creating, setCreating] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -53,6 +62,16 @@ export function AdminUsersPage() {
     enabled: isAdmin,
     queryFn: listAdminRoles,
   })
+  const grantsQ = useQuery({
+    queryKey: ['access-grants', grantUser?.id],
+    enabled: isAdmin && Boolean(grantUser),
+    queryFn: () => listAccessGrants(grantUser?.id),
+  })
+  const clustersQ = useQuery({
+    queryKey: ['clusters'],
+    enabled: isAdmin && Boolean(grantUser),
+    queryFn: listClusters,
+  })
 
   const roleNames =
     rolesQ.data?.map((r) => r.name).filter(Boolean) || [...ROLE_CHOICES]
@@ -60,7 +79,7 @@ export function AdminUsersPage() {
   if (!isAdmin) {
     return (
       <div className="rounded border border-warn/40 bg-warn/10 px-5 py-8 text-sm text-warn">
-        Admin privileges required.
+        {t('adminPages.adminRequired')}
       </div>
     )
   }
@@ -102,13 +121,13 @@ export function AdminUsersPage() {
     setErr('')
     try {
       if (!form.username || !form.email || !form.password) {
-        throw new Error('Username, email and password are required')
+        throw new Error(t('adminPages.userFieldsRequired'))
       }
       if (isProtectedUser(form.username)) {
-        throw new Error('Username is reserved for a protected system account')
+        throw new Error(t('adminPages.usernameReserved'))
       }
       if (form.password !== form.confirmPassword) {
-        throw new Error('Password confirmation does not match')
+        throw new Error(t('adminPages.passwordMismatch'))
       }
       const safeRoles = form.roles.filter((r) => r !== 'admin')
       await createAdminUser({
@@ -123,7 +142,7 @@ export function AdminUsersPage() {
       resetForm()
       void queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     } catch (e: any) {
-      setErr(e?.message || 'Create failed')
+      setErr(e?.message || t('adminPages.createFailed'))
     } finally {
       setBusy(false)
     }
@@ -132,7 +151,7 @@ export function AdminUsersPage() {
   const saveEdit = async () => {
     if (!editTarget) return
     if (isProtectedUser(editTarget.username)) {
-      setErr(`Cannot change permissions for protected account "${editTarget.username}"`)
+      setErr(t('adminPages.cannotChangeProtected', { username: editTarget.username }))
       return
     }
     setBusy(true)
@@ -148,7 +167,7 @@ export function AdminUsersPage() {
       setEditTarget(null)
       void queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     } catch (e: any) {
-      setErr(e?.response?.data?.message || e?.message || 'Update failed')
+      setErr(e?.response?.data?.message || e?.message || t('adminPages.updateFailed'))
     } finally {
       setBusy(false)
     }
@@ -156,7 +175,7 @@ export function AdminUsersPage() {
 
   const toggle = async (user: AdminUser) => {
     if (isProtectedUser(user.username)) {
-      setErr(`Cannot disable protected account "${user.username}"`)
+      setErr(t('adminPages.cannotDisableProtected', { username: user.username }))
       return
     }
     setBusy(true)
@@ -165,7 +184,7 @@ export function AdminUsersPage() {
       await updateAdminUserStatus(user.id, !(user.is_active ?? true))
       await usersQ.refetch()
     } catch (e: any) {
-      setErr(e?.response?.data?.message || e?.message || 'Update failed')
+      setErr(e?.response?.data?.message || e?.message || t('adminPages.updateFailed'))
     } finally {
       setBusy(false)
     }
@@ -174,7 +193,7 @@ export function AdminUsersPage() {
   const remove = async () => {
     if (!deleteTarget) return
     if (isProtectedUser(deleteTarget.username)) {
-      setErr(`Cannot delete protected account "${deleteTarget.username}"`)
+      setErr(t('adminPages.cannotDeleteProtected', { username: deleteTarget.username }))
       setDeleteTarget(null)
       return
     }
@@ -184,7 +203,7 @@ export function AdminUsersPage() {
       setDeleteTarget(null)
       void queryClient.invalidateQueries({ queryKey: ['admin-users'] })
     } catch (e: any) {
-      setErr(e?.response?.data?.message || e?.message || 'Delete failed')
+      setErr(e?.response?.data?.message || e?.message || t('adminPages.deleteFailed'))
     } finally {
       setBusy(false)
     }
@@ -217,11 +236,11 @@ export function AdminUsersPage() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Roles</th>
-                <th>Active</th>
-                <th>Actions</th>
+                <th>{t('adminPages.username')}</th>
+                <th>{t('adminPages.email')}</th>
+                <th>{t('adminPages.roles')}</th>
+                <th>{t('adminPages.colActive')}</th>
+                <th>{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -241,7 +260,7 @@ export function AdminUsersPage() {
                   </td>
                   <td>
                     <Badge tone={u.is_active !== false ? 'ok' : 'danger'}>
-                      {u.is_active !== false ? 'yes' : 'no'}
+                      {u.is_active !== false ? t('common.yes') : t('common.no')}
                     </Badge>
                   </td>
                   <td>
@@ -250,10 +269,22 @@ export function AdminUsersPage() {
                         variant="outline"
                         className="px-2 py-1 text-xs"
                         type="button"
+                        onClick={() => {
+                          setGrantUser(u)
+                          setGrantCluster('')
+                          setGrantNs('')
+                        }}
+                      >
+                        {t('adminPages.grants')}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="px-2 py-1 text-xs"
+                        type="button"
                         disabled={isProtectedUser(u.username)}
                         title={
                           isProtectedUser(u.username)
-                            ? 'Protected: cannot delete or change permissions'
+                            ? t('adminPages.protectedNoChange')
                             : undefined
                         }
                         onClick={() => {
@@ -262,7 +293,7 @@ export function AdminUsersPage() {
                           setEditTarget(u)
                         }}
                       >
-                        Edit
+                        {t('common.edit')}
                       </Button>
                       <Button
                         variant="outline"
@@ -271,12 +302,12 @@ export function AdminUsersPage() {
                         disabled={busy || isProtectedUser(u.username)}
                         title={
                           isProtectedUser(u.username)
-                            ? 'Protected system account'
+                            ? t('adminPages.protectedAccount')
                             : undefined
                         }
                         onClick={() => void toggle(u)}
                       >
-                        Toggle
+                        {t('adminPages.toggle')}
                       </Button>
                       <Button
                         variant="danger"
@@ -285,12 +316,12 @@ export function AdminUsersPage() {
                         disabled={isProtectedUser(u.username)}
                         title={
                           isProtectedUser(u.username)
-                            ? 'Protected system account'
+                            ? t('adminPages.protectedAccount')
                             : undefined
                         }
                         onClick={() => setDeleteTarget(u)}
                       >
-                        Delete
+                        {t('common.delete')}
                       </Button>
                     </div>
                   </td>
@@ -299,7 +330,7 @@ export function AdminUsersPage() {
               {!usersQ.isLoading && !users.length ? (
                 <tr>
                   <td colSpan={6}>
-                    <EmptyState>No users found.</EmptyState>
+                    <EmptyState>{t('adminPages.noUsers')}</EmptyState>
                   </td>
                 </tr>
               ) : null}
@@ -309,7 +340,7 @@ export function AdminUsersPage() {
 
       <Modal
         open={creating || Boolean(editTarget)}
-        title={creating ? 'CREATE USER' : 'EDIT USER'}
+        title={creating ? t('admin.createUser') : t('adminPages.editUser')}
         subtitle={editTarget?.username}
         onClose={() => {
           setCreating(false)
@@ -319,7 +350,7 @@ export function AdminUsersPage() {
         <div className="space-y-3 p-5">
           {creating ? (
             <label className="block space-y-1">
-              <span className="hud-label">Username</span>
+              <span className="hud-label">{t('adminPages.username')}</span>
               <input
                 className="hud-field"
                 value={form.username}
@@ -328,7 +359,7 @@ export function AdminUsersPage() {
             </label>
           ) : null}
           <label className="block space-y-1">
-            <span className="hud-label">Email</span>
+            <span className="hud-label">{t('adminPages.email')}</span>
             <input
               className="hud-field"
               value={form.email}
@@ -336,7 +367,7 @@ export function AdminUsersPage() {
             />
           </label>
           <label className="block space-y-1">
-            <span className="hud-label">Display name</span>
+            <span className="hud-label">{t('adminPages.displayName')}</span>
             <input
               className="hud-field"
               value={form.display_name}
@@ -346,7 +377,7 @@ export function AdminUsersPage() {
           {creating ? (
             <>
               <label className="block space-y-1">
-                <span className="hud-label">Password</span>
+                <span className="hud-label">{t('adminPages.password')}</span>
                 <input
                   type="password"
                   className="hud-field"
@@ -355,7 +386,7 @@ export function AdminUsersPage() {
                 />
               </label>
               <label className="block space-y-1">
-                <span className="hud-label">Confirm password</span>
+                <span className="hud-label">{t('adminPages.confirmPassword')}</span>
                 <input
                   type="password"
                   className="hud-field"
@@ -366,10 +397,8 @@ export function AdminUsersPage() {
             </>
           ) : null}
           <div>
-            <div className="hud-label mb-2">Roles</div>
-            <p className="mb-2 text-[11px] text-text-dim">
-              Management (admin) is reserved for the built-in admin account.
-            </p>
+            <div className="hud-label mb-2">{t('adminPages.roles')}</div>
+            <p className="mb-2 text-[11px] text-text-dim">{t('adminPages.adminRoleReserved')}</p>
             <div className="flex flex-wrap gap-2">
               {roleNames
                 .filter((name) => name !== 'admin')
@@ -401,26 +430,94 @@ export function AdminUsersPage() {
                 setEditTarget(null)
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="button"
               disabled={busy}
               onClick={() => void (creating ? create() : saveEdit())}
             >
-              {busy ? 'Saving…' : creating ? 'Create' : 'Save'}
+              {busy
+                ? t('adminPages.saving')
+                : creating
+                  ? t('common.create')
+                  : t('common.save')}
             </Button>
           </div>
         </div>
       </Modal>
 
+      <Modal
+        open={Boolean(grantUser)}
+        title={t('adminPages.grantsTitle')}
+        subtitle={grantUser?.username}
+        onClose={() => setGrantUser(null)}
+      >
+        <div className="space-y-3 p-5">
+          <p className="text-xs text-text-dim">{t('adminPages.grantsHint')}</p>
+          <ul className="space-y-1 text-sm">
+            {(grantsQ.data || []).map((g) => (
+              <li key={g.id} className="flex items-center justify-between gap-2">
+                <span className="font-mono text-xs">
+                  {g.cluster_id}
+                  {g.namespace ? ` / ${g.namespace}` : ' / *'}
+                </span>
+                <Button
+                  variant="outline"
+                  className="px-2 py-1 text-xs"
+                  type="button"
+                  onClick={() =>
+                    void deleteAccessGrant(g.id).then(() => queryClient.invalidateQueries({ queryKey: ['access-grants'] }))
+                  }
+                >
+                  {t('adminPages.grantRemove')}
+                </Button>
+              </li>
+            ))}
+          </ul>
+          <label className="block space-y-1">
+            <span className="hud-label">{t('adminPages.grantCluster')}</span>
+            <select className="hud-field" value={grantCluster} onChange={(e) => setGrantCluster(e.target.value)}>
+              <option value="">{t('environments.pickCluster')}</option>
+              {(clustersQ.data || []).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block space-y-1">
+            <span className="hud-label">{t('adminPages.grantNamespace')}</span>
+            <input className="hud-field" value={grantNs} onChange={(e) => setGrantNs(e.target.value)} />
+          </label>
+          <Button
+            type="button"
+            disabled={!grantUser || !grantCluster}
+            onClick={() => {
+              if (!grantUser || !grantCluster) return
+              void createAccessGrant({
+                user_id: grantUser.id,
+                cluster_id: grantCluster,
+                namespace: grantNs.trim(),
+              }).then(() => {
+                setGrantNs('')
+                void queryClient.invalidateQueries({ queryKey: ['access-grants'] })
+              })
+            }}
+          >
+            {t('adminPages.addGrant')}
+          </Button>
+        </div>
+      </Modal>
+
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title="DELETE USER"
+        title={t('adminPages.deleteUser')}
         confirmText={deleteTarget?.username}
-        confirmLabel="Delete user"
+        confirmLabel={t('adminPages.deleteUser')}
+        cancelLabel={t('common.cancel')}
         busy={busy}
-        description="This permanently removes the application user account."
+        description={t('adminPages.deleteUserDesc')}
         onClose={() => setDeleteTarget(null)}
         onConfirm={remove}
       />

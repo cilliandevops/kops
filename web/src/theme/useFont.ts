@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import {
+  DEFAULT_FONT_ID,
   FONT_PACKS,
   getStoredFontId,
   resolveFont,
@@ -14,7 +15,7 @@ export function useFont(): {
   fonts: FontPack[]
   setFont: (id: string) => void
 } {
-  const fontId = useSyncExternalStore(subscribeFont, getStoredFontId, () => 'maple')
+  const fontId = useSyncExternalStore(subscribeFont, getStoredFontId, () => DEFAULT_FONT_ID)
   return {
     font: resolveFont(fontId),
     fontId,

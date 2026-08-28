@@ -89,3 +89,64 @@ func (h *HelmHandler) UninstallRelease(c *gin.Context) {
 	}
 	utils.ApiSuccess(c, gin.H{"output": out}, "uninstalled")
 }
+
+func (h *HelmHandler) ListRepos(c *gin.Context) {
+	repos, err := h.service.ListRepos()
+	if err != nil {
+		utils.ApiError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.ApiSuccess(c, repos, "ok")
+}
+
+func (h *HelmHandler) AddRepo(c *gin.Context) {
+	var req service.HelmRepoRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ApiError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := h.service.AddRepo(req.Name, req.URL); err != nil {
+		utils.ApiError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.ApiSuccess(c, gin.H{"name": req.Name}, "repository added")
+}
+
+func (h *HelmHandler) RemoveRepo(c *gin.Context) {
+	if err := h.service.RemoveRepo(c.Param("name")); err != nil {
+		utils.ApiError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.ApiSuccess(c, gin.H{"name": c.Param("name")}, "repository removed")
+}
+
+func (h *HelmHandler) UpdateRepos(c *gin.Context) {
+	if err := h.service.UpdateRepos(); err != nil {
+		utils.ApiError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.ApiSuccess(c, gin.H{"updated": true}, "repositories updated")
+}
+
+func (h *HelmHandler) ListCharts(c *gin.Context) {
+	charts, err := h.service.Catalog(c.Query("refresh") == "1")
+	if err != nil {
+		utils.ApiError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.ApiSuccess(c, charts, "ok")
+}
+
+func (h *HelmHandler) GetChart(c *gin.Context) {
+	ref := c.Query("ref")
+	if ref == "" {
+		utils.ApiError(c, http.StatusBadRequest, "ref is required")
+		return
+	}
+	detail, err := h.service.ChartDetail(ref, c.Query("version"))
+	if err != nil {
+		utils.ApiError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	utils.ApiSuccess(c, detail, "ok")
+}

@@ -21,7 +21,7 @@ export function BrandMark({
   brandClassName,
 }: Props) {
   const mark = (
-    <span className={cn('inline-flex items-baseline gap-1.5', className)}>
+    <span className={cn('inline-flex items-center gap-1.5', className)}>
       <span className={cn('hud-brand', brandClassName)}>
         {compact ? (
           <>
@@ -29,7 +29,7 @@ export function BrandMark({
           </>
         ) : (
           <>
-            CILI<span className="accent">KUBE</span>
+            Cili<span className="accent">Kube</span>
           </>
         )}
       </span>
@@ -43,7 +43,7 @@ export function BrandMark({
 
   if (to) {
     return (
-      <Link to={to} className="inline-flex shrink-0 items-baseline no-underline hover:opacity-90">
+      <Link to={to} className="inline-flex shrink-0 items-center no-underline hover:opacity-90">
         {mark}
       </Link>
     )

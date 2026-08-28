@@ -490,7 +490,7 @@ func readVersion() string {
 	}
 	data, err := os.ReadFile("VERSION")
 	if err != nil {
-		return "1.0.1"
+		return "1.5.0"
 	}
 	return strings.TrimSpace(string(data))
 }

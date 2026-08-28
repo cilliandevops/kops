@@ -4,7 +4,7 @@ app:
 backend:
   image:
     repository: ghcr.io/ciliverse/cilikube
-    tag: v1.0.1
+    tag: v1.5.0
     pullPolicy: IfNotPresent
   replicas: 1
   service:
@@ -20,7 +20,7 @@ backend:
 frontend:
   image:
     repository: ghcr.io/ciliverse/cilikube-web
-    tag: v1.0.1
+    tag: v1.5.0
     pullPolicy: IfNotPresent
   replicas: 1
   service:

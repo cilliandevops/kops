@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from '@/store/auth'
 import { ClusterProvider } from '@/store/cluster'
 import { NamespaceProvider } from '@/store/namespace'
+import { EnvironmentProvider } from '@/store/environment'
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { BootScreen, shouldShowBootScreen } from '@/components/BootScreen'
 
@@ -19,6 +20,9 @@ const OverviewPage = lazy(() =>
 )
 const FleetPage = lazy(() => import('@/pages/FleetPage').then((m) => ({ default: m.FleetPage })))
 const NodesPage = lazy(() => import('@/pages/NodesPage').then((m) => ({ default: m.NodesPage })))
+const NotFoundPage = lazy(() =>
+  import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
+)
 const EventsPage = lazy(() => import('@/pages/EventsPage').then((m) => ({ default: m.EventsPage })))
 const MonitoringPage = lazy(() =>
   import('@/pages/MonitoringPage').then((m) => ({ default: m.MonitoringPage })),
@@ -35,6 +39,15 @@ const ResourceDetailPage = lazy(() =>
 const ClustersPage = lazy(() =>
   import('@/pages/ClustersPage').then((m) => ({ default: m.ClustersPage })),
 )
+const EnvironmentsPage = lazy(() =>
+  import('@/pages/EnvironmentsPage').then((m) => ({ default: m.EnvironmentsPage })),
+)
+const ApplicationsPage = lazy(() =>
+  import('@/pages/ApplicationsPage').then((m) => ({ default: m.ApplicationsPage })),
+)
+const ApplicationDetailPage = lazy(() =>
+  import('@/pages/ApplicationsPage').then((m) => ({ default: m.ApplicationDetailPage })),
+)
 const AdminUsersPage = lazy(() =>
   import('@/pages/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage })),
 )
@@ -46,7 +59,12 @@ const AuditPage = lazy(() => import('@/pages/AuditPage').then((m) => ({ default:
 const GlobalSearchPage = lazy(() =>
   import('@/pages/GlobalSearchPage').then((m) => ({ default: m.GlobalSearchPage })),
 )
-const HelmPage = lazy(() => import('@/pages/HelmPage').then((m) => ({ default: m.HelmPage })))
+const MarketplacePage = lazy(() =>
+  import('@/pages/MarketplacePage').then((m) => ({ default: m.MarketplacePage })),
+)
+const ChartDetailPage = lazy(() =>
+  import('@/pages/ChartDetailPage').then((m) => ({ default: m.ChartDetailPage })),
+)
 const ProxyConsolePage = lazy(() =>
   import('@/pages/ProxyConsolePage').then((m) => ({ default: m.ProxyConsolePage })),
 )
@@ -129,6 +147,52 @@ const StorageClassPage = lazy(() =>
   import('@/pages/resources').then((m) => ({ default: m.StorageClassPage })),
 )
 
+const ReplicaSetsPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.ReplicaSetsPage })),
+)
+const ReplicationControllersPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.ReplicationControllersPage })),
+)
+const PodTemplatesPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.PodTemplatesPage })),
+)
+const EndpointsPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.EndpointsPage })),
+)
+const EndpointSlicesPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.EndpointSlicesPage })),
+)
+const IngressClassesPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.IngressClassesPage })),
+)
+const ServiceCIDRsPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.ServiceCIDRsPage })),
+)
+const PriorityClassesPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.PriorityClassesPage })),
+)
+const RuntimeClassesPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.RuntimeClassesPage })),
+)
+const LeasesPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.LeasesPage })),
+)
+const MutatingWebhooksPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.MutatingWebhooksPage })),
+)
+const ValidatingWebhooksPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.ValidatingWebhooksPage })),
+)
+const VolumeAttachmentsPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.VolumeAttachmentsPage })),
+)
+const CSIDriversPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.CSIDriversPage })),
+)
+const CSINodesPage = lazy(() =>
+  import('@/pages/resourcesExtra').then((m) => ({ default: m.CSINodesPage })),
+)
+
 function Detail({ resource, namespaced = true }: { resource: string; namespaced?: boolean }) {
   return <ResourceDetailPage resource={resource} namespaced={namespaced} />
 }
@@ -181,7 +245,9 @@ export default function App() {
                     <Protected>
                       <ClusterProvider>
                         <NamespaceProvider>
-                          <AppShell />
+                          <EnvironmentProvider>
+                            <AppShell />
+                          </EnvironmentProvider>
                         </NamespaceProvider>
                       </ClusterProvider>
                     </Protected>
@@ -291,8 +357,78 @@ export default function App() {
                     element={<Detail resource="clusterrolebindings" namespaced={false} />}
                   />
                   <Route path="nodes/:name" element={<Detail resource="nodes" namespaced={false} />} />
+                  <Route path="namespaces/:name" element={<Detail resource="namespaces" namespaced={false} />} />
+                  <Route path="replicasets" element={<ReplicaSetsPage />} />
+                  <Route path="replicasets/:namespace/:name" element={<Detail resource="replicasets" />} />
+                  <Route path="replicationcontrollers" element={<ReplicationControllersPage />} />
+                  <Route
+                    path="replicationcontrollers/:namespace/:name"
+                    element={<Detail resource="replicationcontrollers" />}
+                  />
+                  <Route path="podtemplates" element={<PodTemplatesPage />} />
+                  <Route
+                    path="podtemplates/:namespace/:name"
+                    element={<Detail resource="podtemplates" />}
+                  />
+                  <Route path="endpoints" element={<EndpointsPage />} />
+                  <Route path="endpoints/:namespace/:name" element={<Detail resource="endpoints" />} />
+                  <Route path="endpointslices" element={<EndpointSlicesPage />} />
+                  <Route
+                    path="endpointslices/:namespace/:name"
+                    element={<Detail resource="endpointslices" />}
+                  />
+                  <Route path="leases" element={<LeasesPage />} />
+                  <Route path="leases/:namespace/:name" element={<Detail resource="leases" />} />
+                  <Route path="ingressclasses" element={<IngressClassesPage />} />
+                  <Route
+                    path="ingressclasses/:name"
+                    element={<Detail resource="ingressclasses" namespaced={false} />}
+                  />
+                  <Route path="servicecidrs" element={<ServiceCIDRsPage />} />
+                  <Route
+                    path="servicecidrs/:name"
+                    element={<Detail resource="servicecidrs" namespaced={false} />}
+                  />
+                  <Route path="priorityclasses" element={<PriorityClassesPage />} />
+                  <Route
+                    path="priorityclasses/:name"
+                    element={<Detail resource="priorityclasses" namespaced={false} />}
+                  />
+                  <Route path="runtimeclasses" element={<RuntimeClassesPage />} />
+                  <Route
+                    path="runtimeclasses/:name"
+                    element={<Detail resource="runtimeclasses" namespaced={false} />}
+                  />
+                  <Route path="mutatingwebhookconfigurations" element={<MutatingWebhooksPage />} />
+                  <Route
+                    path="mutatingwebhookconfigurations/:name"
+                    element={<Detail resource="mutatingwebhookconfigurations" namespaced={false} />}
+                  />
+                  <Route path="validatingwebhookconfigurations" element={<ValidatingWebhooksPage />} />
+                  <Route
+                    path="validatingwebhookconfigurations/:name"
+                    element={<Detail resource="validatingwebhookconfigurations" namespaced={false} />}
+                  />
+                  <Route path="volumeattachments" element={<VolumeAttachmentsPage />} />
+                  <Route
+                    path="volumeattachments/:name"
+                    element={<Detail resource="volumeattachments" namespaced={false} />}
+                  />
+                  <Route path="csidrivers" element={<CSIDriversPage />} />
+                  <Route
+                    path="csidrivers/:name"
+                    element={<Detail resource="csidrivers" namespaced={false} />}
+                  />
+                  <Route path="csinodes" element={<CSINodesPage />} />
+                  <Route
+                    path="csinodes/:name"
+                    element={<Detail resource="csinodes" namespaced={false} />}
+                  />
                   <Route path="monitoring" element={<MonitoringPage />} />
                   <Route path="clusters" element={<ClustersPage />} />
+                  <Route path="environments" element={<EnvironmentsPage />} />
+                  <Route path="applications" element={<ApplicationsPage />} />
+                  <Route path="applications/:namespace/:name" element={<ApplicationDetailPage />} />
                   <Route path="admin/users" element={<AdminUsersPage />} />
                   <Route path="admin/roles" element={<AdminRolesPage />} />
                   <Route path="admin/settings" element={<AdminSettingsPage />} />
@@ -300,11 +436,17 @@ export default function App() {
                   <Route path="crds" element={<CrdsPage />} />
                   <Route path="audit" element={<AuditPage />} />
                   <Route path="search" element={<GlobalSearchPage />} />
-                  <Route path="helm" element={<HelmPage />} />
+                  <Route path="marketplace" element={<MarketplacePage />} />
+                  <Route path="marketplace/installed" element={<MarketplacePage />} />
+                  <Route path="marketplace/repos" element={<MarketplacePage />} />
+                  <Route path="marketplace/chart/:repo/:chart" element={<ChartDetailPage />} />
+                  {/* Helm moved into the marketplace's Installed tab. */}
+                  <Route path="helm" element={<Navigate to="/marketplace/installed" replace />} />
                   <Route path="proxy" element={<ProxyConsolePage />} />
                   <Route path="ai" element={<AiChatPage />} />
+                  {/* Inside the shell so a dead link keeps its nav instead of vanishing. */}
+                  <Route path="*" element={<NotFoundPage />} />
                 </Route>
-                <Route path="*" element={<Navigate to="/ai" replace />} />
               </Routes>
             </Suspense>
           </BrowserRouter>

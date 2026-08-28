@@ -86,7 +86,7 @@ export function PodPortForward({ open, namespace, podName, onClose }: Props) {
   return (
     <Modal
       open={open}
-      title="PORT FORWARD"
+      title="Port forward"
       subtitle={`${namespace}/${podName}`}
       onClose={() => {
         disconnect()

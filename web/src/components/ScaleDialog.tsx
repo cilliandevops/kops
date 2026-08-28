@@ -20,7 +20,7 @@ export function ScaleDialog({ open, resourceName, current, busy, onClose, onConf
   const valid = Number.isFinite(replicas) && replicas >= 0 && replicas !== current
 
   return (
-    <Modal open={open} title="SCALE RESOURCE" subtitle={resourceName} onClose={onClose}>
+    <Modal open={open} title="Scale resource" subtitle={resourceName} onClose={onClose}>
       <div className="space-y-4 px-5 py-4">
         <p className="text-sm text-text-dim">
           Current replicas: <span className="font-semibold text-text">{current}</span>

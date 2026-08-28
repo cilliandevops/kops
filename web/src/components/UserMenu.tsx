@@ -2,8 +2,20 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronDown, Languages, LogOut, Palette, Settings, Type, UserRound } from 'lucide-react'
+import {
+  ChevronDown,
+  Languages,
+  LayoutList,
+  LogOut,
+  Palette,
+  Settings,
+  Type,
+  UserRound,
+} from 'lucide-react'
 import { useAuth } from '@/store/auth'
+import { NavCustomizer } from './NavCustomizer'
+import type { NavGroup } from '@/nav/definitions'
+import type { NavPrefs } from '@/nav/prefs'
 import { useTheme } from '@/theme/useTheme'
 import { useFont } from '@/theme/useFont'
 import { switchTheme } from '@/theme/switchTheme'
@@ -15,15 +27,21 @@ const MENU_MIN_W = 220
 export function UserMenu({
   primaryRole,
   isViewerOnly,
+  navGroups,
+  navPrefs,
 }: {
   primaryRole: string
   isViewerOnly: boolean
+  /** Menus this user may see, for the sidebar customizer. */
+  navGroups: NavGroup[]
+  navPrefs: NavPrefs
 }) {
   const { t, i18n } = useTranslation()
   const { user, logout, isAdmin } = useAuth()
   const { themeId, themes } = useTheme()
   const { fontId, fonts, setFont } = useFont()
   const [open, setOpen] = useState(false)
+  const [navCustomizerOpen, setNavCustomizerOpen] = useState(false)
   const [menuPos, setMenuPos] = useState<{ top: number; left: number; maxHeight: number } | null>(
     null,
   )
@@ -111,15 +129,13 @@ export function UserMenu({
         className="flex h-9 items-center gap-1.5 rounded border border-transparent px-1.5 text-xs text-text-dim transition hover:border-line hover:bg-mist hover:text-text sm:h-auto sm:gap-2 sm:px-2 sm:py-1"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`${user?.username || 'operator'} / ${primaryRole}`}
+        aria-label={user?.username || 'operator'}
         onClick={() => setOpen((v) => !v)}
       >
         <UserRound className="h-4 w-4 shrink-0 text-cyan sm:hidden" />
-        <span className="hidden max-w-[7rem] truncate text-text sm:inline">
+        <span className="hidden max-w-[8rem] truncate text-text sm:inline">
           {user?.username || 'operator'}
         </span>
-        <span className="hidden text-line sm:inline">/</span>
-        <span className={cn('hidden sm:inline', roleTone)}>{primaryRole}</span>
         {isViewerOnly ? (
           <span className="hidden rounded border border-line px-1.5 py-0.5 text-[10px] tracking-wider uppercase md:inline">
             {t('common.readOnly')}
@@ -154,6 +170,18 @@ export function UserMenu({
                 <UserRound className="h-3.5 w-3.5 text-cyan" />
                 {t('nav.profile')}
               </Link>
+              <button
+                type="button"
+                role="menuitem"
+                className="flex min-h-11 w-full items-center gap-2 px-3 py-2.5 text-left text-[13px] text-text hover:bg-mist sm:min-h-0 sm:py-2 sm:text-[12px]"
+                onClick={() => {
+                  setOpen(false)
+                  setNavCustomizerOpen(true)
+                }}
+              >
+                <LayoutList className="h-3.5 w-3.5 text-cyan" />
+                {t('navCustomizer.title')}
+              </button>
               {isAdmin ? (
                 <Link
                   role="menuitem"
@@ -268,6 +296,13 @@ export function UserMenu({
             document.body,
           )
         : null}
+
+      <NavCustomizer
+        open={navCustomizerOpen}
+        onClose={() => setNavCustomizerOpen(false)}
+        authorized={navGroups}
+        prefs={navPrefs}
+      />
     </div>
   )
 }

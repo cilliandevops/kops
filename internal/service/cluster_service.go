@@ -227,21 +227,17 @@ func (s *ClusterService) CreateCluster(req models.CreateClusterRequest) error {
 	if k8s.IsShowcase() {
 		return fmt.Errorf("showcase mode: importing real clusters is disabled")
 	}
-	// 1. Validate kubeconfig
-	config, err := s.validateKubeconfig(req.KubeconfigData)
+	kubeconfigBytes, err := resolveCreateClusterKubeconfig(req)
+	if err != nil {
+		return err
+	}
+	config, err := clientcmd.RESTConfigFromKubeConfig(kubeconfigBytes)
 	if err != nil {
 		return fmt.Errorf("invalid kubeconfig: %w", err)
 	}
 
-	// 2. Test connection
 	if err := s.testConnection(config); err != nil {
 		return fmt.Errorf("failed to connect to cluster: %w", err)
-	}
-
-	// 3. Decode and create cluster
-	kubeconfigBytes, err := base64.StdEncoding.DecodeString(req.KubeconfigData)
-	if err != nil {
-		return fmt.Errorf("kubeconfig data is not valid Base64 encoding: %w", err)
 	}
 	cluster := &store.Cluster{
 		Name:           req.Name,
@@ -278,6 +274,26 @@ func (s *ClusterService) SetActiveCluster(id string) error {
 // GetActiveClusterID gets the current active cluster ID
 func (s *ClusterService) GetActiveClusterID() string {
 	return s.k8sManager.GetActiveClusterID()
+}
+
+func resolveCreateClusterKubeconfig(req models.CreateClusterRequest) ([]byte, error) {
+	if req.Server != "" || req.Token != "" {
+		return k8s.BuildKubeconfigFromToken(k8s.TokenClusterInput{
+			Name:     req.Name,
+			Server:   req.Server,
+			Token:    req.Token,
+			CAData:   req.CAData,
+			Insecure: req.Insecure,
+		})
+	}
+	if req.KubeconfigData == "" {
+		return nil, fmt.Errorf("provide kubeconfigData or server+token")
+	}
+	decoded, err := base64.StdEncoding.DecodeString(req.KubeconfigData)
+	if err != nil {
+		return nil, fmt.Errorf("kubeconfig data is not valid Base64 encoding: %w", err)
+	}
+	return decoded, nil
 }
 
 // validateKubeconfig validates the kubeconfig data

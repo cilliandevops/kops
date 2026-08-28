@@ -118,75 +118,7 @@ export function AiSessionRow({ session, active, onSelect, onRename, onDuplicate,
       }}
       onKeyDown={onRowKey}
     >
-      <span className="ai-ops-session-dot" aria-hidden />
       <div className="ai-ops-session-body">
-        <div className="ai-ops-session-meta">
-          <span className="ai-ops-session-time">{formatSessionTime(session.updatedAt)}</span>
-          <div className="ai-ops-session-actions">
-            <button
-              ref={moreBtnRef}
-              type="button"
-              className="ai-ops-session-more"
-              title={t('ai.more')}
-              aria-label={t('ai.moreActions')}
-              aria-expanded={menuOpen}
-              onClick={(e) => {
-                e.stopPropagation()
-                setMenuOpen((v) => !v)
-              }}
-            >
-              <MoreHorizontal className="h-3.5 w-3.5" />
-            </button>
-            {menuOpen
-              ? createPortal(
-                  <div
-                    ref={menuRef}
-                    className="ai-ops-session-menu"
-                    role="menu"
-                    style={{ top: menuPos.top, left: menuPos.left }}
-                  >
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        startRename(e)
-                      }}
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                      {t('ai.rename')}
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setMenuOpen(false)
-                        onDuplicate()
-                      }}
-                    >
-                      <Copy className="h-3.5 w-3.5" />
-                      {t('ai.duplicate')}
-                    </button>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      className="is-danger"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setMenuOpen(false)
-                        onDelete()
-                      }}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      {t('ai.delete')}
-                    </button>
-                  </div>,
-                  document.body,
-                )
-              : null}
-          </div>
-        </div>
         {renaming ? (
           <input
             ref={inputRef}
@@ -215,6 +147,71 @@ export function AiSessionRow({ session, active, onSelect, onRename, onDuplicate,
             {shownTitle}
           </div>
         )}
+        <span className="ai-ops-session-time">{formatSessionTime(session.updatedAt)}</span>
+      </div>
+      <div className="ai-ops-session-actions">
+        <button
+          ref={moreBtnRef}
+          type="button"
+          className="ai-ops-session-more"
+          title={t('ai.more')}
+          aria-label={t('ai.moreActions')}
+          aria-expanded={menuOpen}
+          onClick={(e) => {
+            e.stopPropagation()
+            setMenuOpen((v) => !v)
+          }}
+        >
+          <MoreHorizontal className="h-3.5 w-3.5" />
+        </button>
+        {menuOpen
+          ? createPortal(
+              <div
+                ref={menuRef}
+                className="ai-ops-session-menu"
+                role="menu"
+                style={{ top: menuPos.top, left: menuPos.left }}
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    startRename(e)
+                  }}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  {t('ai.rename')}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setMenuOpen(false)
+                    onDuplicate()
+                  }}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  {t('ai.duplicate')}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="is-danger"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setMenuOpen(false)
+                    onDelete()
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  {t('ai.delete')}
+                </button>
+              </div>,
+              document.body,
+            )
+          : null}
       </div>
     </div>
   )

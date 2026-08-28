@@ -3,13 +3,18 @@ package service
 import (
 	"sync"
 
+	admissionv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	batchv1 "k8s.io/api/batch/v1"
+	coordinationv1 "k8s.io/api/coordination/v1"
 	corev1 "k8s.io/api/core/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	nodev1 "k8s.io/api/node/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	schedulingv1 "k8s.io/api/scheduling/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	gatewayv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -71,4 +76,19 @@ func (f *ResourceServiceFactory) InitializeDefaultServices() {
 	f.RegisterService("poddisruptionbudgets", NewBaseResourceService[*policyv1.PodDisruptionBudget](new(PDBClient)))
 	f.RegisterService("resourcequotas", NewBaseResourceService[*corev1.ResourceQuota](new(ResourceQuotaClient)))
 	f.RegisterService("limitranges", NewBaseResourceService[*corev1.LimitRange](new(LimitRangeClient)))
+	f.RegisterService("replicasets", NewBaseResourceService[*appsv1.ReplicaSet](new(ReplicaSetClient)))
+	f.RegisterService("replicationcontrollers", NewBaseResourceService[*corev1.ReplicationController](new(ReplicationControllerClient)))
+	f.RegisterService("endpoints", NewBaseResourceService[*corev1.Endpoints](new(EndpointsClient)))
+	f.RegisterService("endpointslices", NewBaseResourceService[*discoveryv1.EndpointSlice](new(EndpointSliceClient)))
+	f.RegisterService("leases", NewBaseResourceService[*coordinationv1.Lease](new(LeaseClient)))
+	f.RegisterService("podtemplates", NewBaseResourceService[*corev1.PodTemplate](new(PodTemplateClient)))
+	f.RegisterService("ingressclasses", NewBaseResourceService[*networkingv1.IngressClass](new(IngressClassClient)))
+	f.RegisterService("servicecidrs", NewBaseResourceService[*networkingv1.ServiceCIDR](new(ServiceCIDRClient)))
+	f.RegisterService("priorityclasses", NewBaseResourceService[*schedulingv1.PriorityClass](new(PriorityClassClient)))
+	f.RegisterService("runtimeclasses", NewBaseResourceService[*nodev1.RuntimeClass](new(RuntimeClassClient)))
+	f.RegisterService("mutatingwebhookconfigurations", NewBaseResourceService[*admissionv1.MutatingWebhookConfiguration](new(MutatingWebhookConfigurationClient)))
+	f.RegisterService("validatingwebhookconfigurations", NewBaseResourceService[*admissionv1.ValidatingWebhookConfiguration](new(ValidatingWebhookConfigurationClient)))
+	f.RegisterService("volumeattachments", NewBaseResourceService[*storagev1.VolumeAttachment](new(VolumeAttachmentClient)))
+	f.RegisterService("csidrivers", NewBaseResourceService[*storagev1.CSIDriver](new(CSIDriverClient)))
+	f.RegisterService("csinodes", NewBaseResourceService[*storagev1.CSINode](new(CSINodeClient)))
 }

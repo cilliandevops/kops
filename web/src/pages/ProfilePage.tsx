@@ -56,13 +56,13 @@ export function ProfilePage() {
 
   useEffect(() => {
     if (params.get('oauth') === 'linked') {
-      setMsg('GitHub linked successfully')
+      setMsg(t('profilePage.githubLinked'))
       const next = new URLSearchParams(params)
       next.delete('oauth')
       setParams(next, { replace: true })
       void q.refetch()
     }
-  }, [params, q, setParams])
+  }, [params, q, setParams, t])
 
   const saveProfile = async () => {
     setBusy(true)
@@ -74,10 +74,10 @@ export function ProfilePage() {
         display_name: displayName.trim(),
         avatar_url: q.data?.avatar_url || '',
       })
-      setMsg('Profile updated')
+      setMsg(t('profilePage.profileUpdated'))
       await q.refetch()
     } catch (e: any) {
-      setErr(e?.message || 'Update failed')
+      setErr(e?.message || t('profilePage.updateFailed'))
     } finally {
       setBusy(false)
     }
@@ -85,11 +85,11 @@ export function ProfilePage() {
 
   const changePassword = async () => {
     if (!oldPassword || !newPassword) {
-      setErr('Old and new password are required')
+      setErr(t('profilePage.passwordsRequired'))
       return
     }
     if (newPassword !== confirmPassword) {
-      setErr('Password confirmation does not match')
+      setErr(t('forcePassword.mismatch'))
       return
     }
     setBusy(true)
@@ -103,9 +103,9 @@ export function ProfilePage() {
       setOldPassword('')
       setNewPassword('')
       setConfirmPassword('')
-      setMsg('Password changed')
+      setMsg(t('profilePage.passwordChanged'))
     } catch (e: any) {
-      setErr(e?.message || 'Password change failed')
+      setErr(e?.message || t('profilePage.passwordChangeFailed'))
     } finally {
       setBusy(false)
     }
@@ -117,10 +117,10 @@ export function ProfilePage() {
     setMsg('')
     try {
       const data = await fetchOAuthAuthURL('github', 'cilikube_link')
-      if (!data?.auth_url) throw new Error('Failed to get GitHub authorize URL')
+      if (!data?.auth_url) throw new Error(t('profilePage.githubAuthUrlFailed'))
       window.location.href = data.auth_url
     } catch (e: any) {
-      setErr(e?.response?.data?.error || e?.message || 'Failed to start GitHub link')
+      setErr(e?.response?.data?.error || e?.message || t('profilePage.githubLinkFailed'))
       setBusy(false)
     }
   }
@@ -131,10 +131,10 @@ export function ProfilePage() {
     setMsg('')
     try {
       await unlinkOAuthAccount('github')
-      setMsg('GitHub unlinked')
+      setMsg(t('profilePage.githubUnlinked'))
       await q.refetch()
     } catch (e: any) {
-      setErr(e?.response?.data?.error || e?.message || 'Unlink failed')
+      setErr(e?.response?.data?.error || e?.message || t('profilePage.unlinkFailed'))
     } finally {
       setBusy(false)
     }
@@ -170,15 +170,17 @@ export function ProfilePage() {
           ))}
         </div>
         <p className="text-xs text-text-dim">
-          Last login: {profile?.last_login || '—'} · Active:{' '}
-          {profile?.is_active === false ? 'no' : 'yes'}
+          {t('profilePage.accountMeta', {
+            lastLogin: profile?.last_login || '—',
+            active: profile?.is_active === false ? t('common.no') : t('common.yes'),
+          })}
         </p>
         <label className="block space-y-1">
-          <span className="hud-label">Email</span>
+          <span className="hud-label">{t('profilePage.email')}</span>
           <input className="hud-field" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
         <label className="block space-y-1">
-          <span className="hud-label">Display name</span>
+          <span className="hud-label">{t('profilePage.displayName')}</span>
           <input
             className="hud-field"
             value={displayName}
@@ -186,26 +188,24 @@ export function ProfilePage() {
           />
         </label>
         <Button type="button" disabled={busy || q.isLoading} onClick={() => void saveProfile()}>
-          Save profile
+          {t('profilePage.saveProfile')}
         </Button>
       </Card>
 
       <Card className="space-y-3 p-5">
-        <h2 className="font-display text-lg font-bold tracking-[0.12em]">LINKED LOGINS</h2>
-        <p className="text-xs text-text-dim">
-          Link GitHub to <span className="text-text">this</span> account so Continue with GitHub
-          signs you in here (with your current roles). If GitHub already created a separate viewer
-          user, unlink there first or ask an admin to remove that account.
-        </p>
+        <h2 className="font-display text-lg font-bold tracking-[0.12em]">
+          {t('profilePage.linkedLogins')}
+        </h2>
+        <p className="text-xs text-text-dim">{t('profilePage.linkedLoginsHint')}</p>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm">GitHub</span>
           <Badge tone={githubLinked ? 'ok' : 'neutral'}>
-            {githubLinked ? 'linked' : 'not linked'}
+            {githubLinked ? t('profilePage.linked') : t('profilePage.notLinked')}
           </Badge>
         </div>
         {githubLinked ? (
           <Button type="button" variant="outline" disabled={busy} onClick={() => void unlinkGitHub()}>
-            Unlink GitHub
+            {t('profilePage.unlinkGithub')}
           </Button>
         ) : (
           <Button
@@ -213,20 +213,20 @@ export function ProfilePage() {
             disabled={busy || !githubReady}
             onClick={() => void linkGitHub()}
           >
-            Link GitHub
+            {t('profilePage.linkGithub')}
           </Button>
         )}
         {!githubReady ? (
-          <p className="text-xs text-warn">
-            GitHub OAuth is not login-ready. Configure Client ID/Secret in Admin → Settings.
-          </p>
+          <p className="text-xs text-warn">{t('profilePage.githubNotReady')}</p>
         ) : null}
       </Card>
 
       <Card className="space-y-3 p-5">
-        <h2 className="font-display text-lg font-bold tracking-[0.12em]">CHANGE PASSWORD</h2>
+        <h2 className="font-display text-lg font-bold tracking-[0.12em]">
+          {t('profile.changePassword')}
+        </h2>
         <label className="block space-y-1">
-          <span className="hud-label">Current password</span>
+          <span className="hud-label">{t('forcePassword.oldPassword')}</span>
           <input
             type="password"
             className="hud-field"
@@ -236,7 +236,7 @@ export function ProfilePage() {
           />
         </label>
         <label className="block space-y-1">
-          <span className="hud-label">New password</span>
+          <span className="hud-label">{t('forcePassword.newPassword')}</span>
           <input
             type="password"
             className="hud-field"
@@ -246,7 +246,7 @@ export function ProfilePage() {
           />
         </label>
         <label className="block space-y-1">
-          <span className="hud-label">Confirm new password</span>
+          <span className="hud-label">{t('forcePassword.confirmPassword')}</span>
           <input
             type="password"
             className="hud-field"
@@ -256,7 +256,7 @@ export function ProfilePage() {
           />
         </label>
         <Button type="button" disabled={busy} onClick={() => void changePassword()}>
-          Update password
+          {t('profilePage.updatePassword')}
         </Button>
       </Card>
     </div>

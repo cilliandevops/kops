@@ -178,7 +178,7 @@ export function OverviewPage() {
             const inner = (
               <>
                 <div className="hud-label text-[10px] sm:text-[11px]">{tile.label}</div>
-                <div className="mt-0.5 font-display text-xl font-bold tracking-wide text-cyan sm:mt-1 sm:text-2xl">
+                <div className="mt-0.5 font-display text-xl font-semibold tracking-[-0.01em] text-text sm:mt-1 sm:text-2xl">
                   {value}
                 </div>
               </>
@@ -230,13 +230,13 @@ export function OverviewPage() {
           <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="rounded border border-line bg-mist px-2.5 py-2.5 sm:px-3 sm:py-3">
               <div className="hud-label">{t('overview.avgCpu')}</div>
-              <div className="mt-1 font-display text-lg font-bold text-cyan sm:text-xl">
+              <div className="mt-1 font-display text-lg font-semibold text-text sm:text-xl">
                 {formatPercent(rollup.avgCpuUsagePercent)}
               </div>
             </div>
             <div className="rounded border border-line bg-mist px-2.5 py-2.5 sm:px-3 sm:py-3">
               <div className="hud-label">Avg Memory</div>
-              <div className="mt-1 font-display text-lg font-bold text-orange sm:text-xl">
+              <div className="mt-1 font-display text-lg font-semibold text-text sm:text-xl">
                 {formatPercent(rollup.avgMemoryUsagePercent)}
               </div>
             </div>

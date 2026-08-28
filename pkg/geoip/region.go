@@ -20,6 +20,18 @@ const (
 	defaultDBURL     = "https://cdn.jsdelivr.net/gh/lionsoul2014/ip2region@master/data/ip2region_v4.xdb"
 )
 
+// Kind identifies an address the xdb cannot place, so the UI can localise it.
+// Real lookups leave it empty: ip2region only ships Chinese place names, and
+// translating those is out of scope.
+type Kind string
+
+const (
+	KindLoopback    Kind = "loopback"
+	KindPrivate     Kind = "private"
+	KindUnspecified Kind = "unspecified"
+	KindInvalid     Kind = "invalid"
+)
+
 // Location is a parsed ip2region result.
 type Location struct {
 	Country  string `json:"country,omitempty"`
@@ -28,6 +40,9 @@ type Location struct {
 	ISP      string `json:"isp,omitempty"`
 	// Label is a short display string, e.g. "中国 广东省 深圳市".
 	Label string `json:"label,omitempty"`
+	// Kind is set only for non-public addresses; clients should render their own
+	// wording for it and fall back to Label when empty.
+	Kind Kind `json:"kind,omitempty"`
 	// Raw is the original pipe-separated ip2region string.
 	Raw string `json:"raw,omitempty"`
 }
@@ -111,16 +126,16 @@ func (r *Resolver) Lookup(ip string) *Location {
 func classifyNonPublic(ipStr string) *Location {
 	ip := net.ParseIP(ipStr)
 	if ip == nil {
-		return &Location{Label: "无效地址", Country: "无效地址"}
+		return &Location{Label: "无效地址", Country: "无效地址", Kind: KindInvalid}
 	}
 	if ip.IsLoopback() {
-		return &Location{Label: "本机回环", Country: "本机回环"}
+		return &Location{Label: "本机回环", Country: "本机回环", Kind: KindLoopback}
 	}
 	if ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
-		return &Location{Label: "内网", Country: "内网"}
+		return &Location{Label: "内网", Country: "内网", Kind: KindPrivate}
 	}
 	if ip.IsUnspecified() {
-		return &Location{Label: "未指定", Country: "未指定"}
+		return &Location{Label: "未指定", Country: "未指定", Kind: KindUnspecified}
 	}
 	return nil
 }

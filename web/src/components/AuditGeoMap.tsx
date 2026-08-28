@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { HudTable, HudTableScroll } from '@/components/HudTableScroll'
+import { regionLabel } from '@/lib/geoRegion'
 import { cn } from '@/lib/utils'
 
 export type GeoBucket = {
@@ -15,6 +16,7 @@ export type GeoIPRow = {
   ip: string
   hits: number
   region?: string
+  region_kind?: string
   country?: string
   province?: string
   city?: string
@@ -176,10 +178,7 @@ export function AuditGeoMap({ stats, loading }: Props) {
               </thead>
               <tbody>
                 {ips.map((row, idx) => {
-                  const region =
-                    row.region ||
-                    [row.country, row.province, row.city].filter(Boolean).join(' ') ||
-                    '—'
+                  const region = regionLabel(row, t)
                   return (
                     <tr key={row.ip}>
                       <td className="tabular-nums text-text-dim">{idx + 1}</td>

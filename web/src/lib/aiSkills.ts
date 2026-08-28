@@ -84,7 +84,7 @@ const SKILL_SEEDS: SkillSeed[] = [
     id: 'skill_inspect_combo',
     code: 'S1',
     label: { en: 'Smart inspect', zh: '智能点检' },
-    blurb: { en: 'Overview + bad pods + events', zh: '概览 + 异常 Pod + 近期事件' },
+    blurb: { en: 'See if the cluster is healthy', zh: '先看集群是否健康' },
     prompt: {
       en:
         'Run a smart inspect: cluster overview, then Failed/Pending pods, then recent Warning/Error events.' +
@@ -98,7 +98,7 @@ const SKILL_SEEDS: SkillSeed[] = [
     id: 'skill_triage_combo',
     code: 'S2',
     label: { en: 'Quick triage', zh: '快速调查' },
-    blurb: { en: 'Bad pods → sample logs', zh: '异常 Pod → 抽样日志' },
+    blurb: { en: 'Sample logs from a bad pod', zh: '从异常 Pod 抽日志定位' },
     prompt: {
       en:
         'Quick triage: find Failed or Pending pods, sample logs from a representative one, and tell me where to click in the console next.' +
@@ -112,7 +112,7 @@ const SKILL_SEEDS: SkillSeed[] = [
     id: 'skill_workload_snap',
     code: 'S3',
     label: { en: 'Workload snapshot', zh: '工作负载快照' },
-    blurb: { en: 'Deployments + Services', zh: 'Deployments + Services' },
+    blurb: { en: 'Check Deployments vs Services', zh: '核对 Deployment 和 Service' },
     prompt: {
       en:
         'Take a workload snapshot for the current scope: list Deployments and Services (prefer the default namespace).' +

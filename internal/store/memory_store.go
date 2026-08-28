@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 )
@@ -23,11 +24,15 @@ type MemoryStore struct {
 	userRoles      map[uint][]uint           // userID -> roleIDs
 	oauthProviders map[string]*OAuthProvider // key: userID_provider
 	auditLogs      []*AuditLog
+	environments   map[string]*Environment
+	accessGrants   map[uint]*AccessGrant
+	navPolicies    map[string]*RoleNavPolicy // key: role name
 
 	// ID generators
 	nextUserID     uint
 	nextRoleID     uint
 	nextAuditLogID uint
+	nextGrantID    uint
 
 	mutex sync.RWMutex
 }
@@ -44,9 +49,13 @@ func NewMemoryStore() Store {
 		userRoles:      make(map[uint][]uint),
 		oauthProviders: make(map[string]*OAuthProvider),
 		auditLogs:      make([]*AuditLog, 0),
+		environments:   make(map[string]*Environment),
+		accessGrants:   make(map[uint]*AccessGrant),
+		navPolicies:    make(map[string]*RoleNavPolicy),
 		nextUserID:     1,
 		nextRoleID:     1,
 		nextAuditLogID: 1,
+		nextGrantID:    1,
 	}
 	return store
 }
@@ -1277,5 +1286,162 @@ func (s *MemoryStore) CleanupExpiredSessions(before time.Time) error {
 		memoryUserSessionsByUser[session.UserID] = newUserSessions
 	}
 
+	return nil
+}
+
+func (s *MemoryStore) CreateEnvironment(env *Environment) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	if env.ID == "" {
+		env.ID = generateUUID()
+	}
+	if _, ok := s.environments[env.ID]; ok {
+		return fmt.Errorf("environment already exists")
+	}
+	for _, e := range s.environments {
+		if e.Name == env.Name {
+			return fmt.Errorf("environment name already exists")
+		}
+	}
+	cp := *env
+	s.environments[env.ID] = &cp
+	return nil
+}
+
+func (s *MemoryStore) GetEnvironmentByID(id string) (*Environment, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	e, ok := s.environments[id]
+	if !ok {
+		return nil, fmt.Errorf("environment not found")
+	}
+	cp := *e
+	return &cp, nil
+}
+
+func (s *MemoryStore) GetEnvironmentByName(name string) (*Environment, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	for _, e := range s.environments {
+		if e.Name == name {
+			cp := *e
+			return &cp, nil
+		}
+	}
+	return nil, fmt.Errorf("environment not found")
+}
+
+func (s *MemoryStore) ListEnvironments() ([]Environment, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	out := make([]Environment, 0, len(s.environments))
+	for _, e := range s.environments {
+		out = append(out, *e)
+	}
+	return out, nil
+}
+
+func (s *MemoryStore) UpdateEnvironment(env *Environment) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	if _, ok := s.environments[env.ID]; !ok {
+		return fmt.Errorf("environment not found")
+	}
+	cp := *env
+	s.environments[env.ID] = &cp
+	return nil
+}
+
+func (s *MemoryStore) DeleteEnvironment(id string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	delete(s.environments, id)
+	return nil
+}
+
+func (s *MemoryStore) CreateAccessGrant(g *AccessGrant) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	for _, existing := range s.accessGrants {
+		if existing.UserID == g.UserID && existing.ClusterID == g.ClusterID && existing.Namespace == g.Namespace {
+			return fmt.Errorf("grant already exists")
+		}
+	}
+	g.ID = s.nextGrantID
+	s.nextGrantID++
+	cp := *g
+	s.accessGrants[g.ID] = &cp
+	return nil
+}
+
+func (s *MemoryStore) GetAccessGrantByID(id uint) (*AccessGrant, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	g, ok := s.accessGrants[id]
+	if !ok {
+		return nil, fmt.Errorf("grant not found")
+	}
+	cp := *g
+	return &cp, nil
+}
+
+func (s *MemoryStore) ListAccessGrants() ([]AccessGrant, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	out := make([]AccessGrant, 0, len(s.accessGrants))
+	for _, g := range s.accessGrants {
+		out = append(out, *g)
+	}
+	return out, nil
+}
+
+func (s *MemoryStore) ListAccessGrantsByUser(userID uint) ([]AccessGrant, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	out := make([]AccessGrant, 0)
+	for _, g := range s.accessGrants {
+		if g.UserID == userID {
+			out = append(out, *g)
+		}
+	}
+	return out, nil
+}
+
+func (s *MemoryStore) DeleteAccessGrant(id uint) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	delete(s.accessGrants, id)
+	return nil
+}
+
+func (s *MemoryStore) ListRoleNavPolicies() ([]RoleNavPolicy, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	out := make([]RoleNavPolicy, 0, len(s.navPolicies))
+	for _, p := range s.navPolicies {
+		out = append(out, *p)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].RoleName < out[j].RoleName })
+	return out, nil
+}
+
+func (s *MemoryStore) GetRoleNavPolicies(roleNames []string) ([]RoleNavPolicy, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	out := make([]RoleNavPolicy, 0, len(roleNames))
+	for _, name := range roleNames {
+		if p, ok := s.navPolicies[name]; ok {
+			out = append(out, *p)
+		}
+	}
+	return out, nil
+}
+
+func (s *MemoryStore) UpsertRoleNavPolicy(p *RoleNavPolicy) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	cp := *p
+	cp.UpdatedAt = time.Now()
+	s.navPolicies[cp.RoleName] = &cp
 	return nil
 }

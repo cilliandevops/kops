@@ -35,8 +35,8 @@ export function GlobalSearchPage() {
             <thead>
               <tr>
                 <th>Kind</th>
-                <th>Name</th>
-                <th>Namespace</th>
+                <th>{t('common.name')}</th>
+                <th>{t('common.namespace')}</th>
               </tr>
             </thead>
             <tbody>

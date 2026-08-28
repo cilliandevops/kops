@@ -172,15 +172,15 @@ export function GlobalSearchPalette() {
       <button
         id="hud-global-search-trigger"
         type="button"
-        className="hud-select hud-select-trigger flex h-9 w-9 shrink-0 items-center justify-center p-0 text-text-dim sm:h-auto sm:w-auto sm:min-w-0 sm:max-w-md sm:flex-1 sm:justify-start sm:gap-2 sm:px-3 sm:py-2 sm:text-left"
+        className="hud-select hud-select-trigger flex h-9 w-full min-w-0 max-w-full items-center justify-start gap-2 px-3 py-2 text-left text-text-dim"
         onClick={() => setOpen(true)}
         aria-label="Open global search"
       >
-        <Search className="h-4 w-4 shrink-0 text-cyan/80 sm:h-3.5 sm:w-3.5" />
-        <span className="hidden min-w-0 flex-1 truncate text-[12px] sm:inline">
+        <Search className="h-3.5 w-3.5 shrink-0 text-cyan/80" />
+        <span className="min-w-0 flex-1 truncate text-[12px]">
           {t('nav.searchPlaceholder')}
         </span>
-        <kbd className="hidden shrink-0 rounded border border-line px-1.5 py-0.5 font-mono text-[10px] text-text-dim md:inline">
+        <kbd className="hidden shrink-0 rounded border border-line px-1.5 py-0.5 font-mono text-[10px] text-text-dim sm:inline">
           {shortcutLabel()}
         </kbd>
       </button>
