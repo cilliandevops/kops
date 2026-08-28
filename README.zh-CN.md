@@ -53,10 +53,13 @@ CiliKube 是开源的 Kubernetes 多集群管理平台，技术栈为 React + Ty
 
 ### v1.5.0（当前）
 
+- **应用市场**：可搜索的 Helm Chart 目录，装之前先看 Chart README 与默认 values，仓库管理和已安装 Release 也在同一处；入口提到顶栏三段切换（AI / Console / Marketplace），不再藏在控制台里
 - **资源覆盖**：新增 15 种资源 —— ReplicaSet、ReplicationController、PodTemplate、Endpoints、EndpointSlice、IngressClass、ServiceCIDR、PriorityClass、RuntimeClass、Lease、Mutating/ValidatingWebhook、VolumeAttachment、CSIDriver、CSINode
 - **节点运维**：cordon / uncordon / drain（含驱逐进度）、污点与标签编辑
 - **环境 / 应用**：应用分组视图与访问范围管理
-- **UI 重构**：默认主题改为中性灰白，排版与间距重做、表格更紧凑；八套配色主题仍可选
+- **导航可配置**：管理员按角色隐藏侧栏分组（黑名单式，新功能默认可见）；用户再在自己浏览器里排序或隐藏剩下的菜单
+- **上下文栏**：集群与命名空间选择器从拥挤的顶栏挪出来，只在真正按其取值的页面出现
+- **UI 重构**：排版与间距重做、表格更紧凑；新增 graphite、carbon 两套中性主题，连同原有八套共十套
 - **登录页**：重新设计的网格 / 粒子光场，会跟随页面布局避让
 - 字体精简为浏览器默认 + Maple Mono（选 `Maple Mono CN` 时全站统一一种字形）
 - 许可证变更为 AGPL-3.0-only
@@ -80,70 +83,75 @@ CiliKube 是开源的 Kubernetes 多集群管理平台，技术栈为 React + Ty
 - **多主题**：tron / paper / matrix / amber / nord / sakura / midnight-violet / solarized
 
 <div align="center">
-  <img src="docs/v1.0.1/01-ai-landing.png" alt="AI 落地页" width="100%">
+  <img src="docs/v1.5.0/02-marketplace.png" alt="应用市场" width="100%">
+  <p><strong>应用市场 · 顶栏三段切换后面的 Helm Chart 目录</strong></p>
+</div>
+
+<div align="center">
+  <img src="docs/v1.5.0/01-ai-landing.png" alt="AI 落地页" width="100%">
   <p><strong>AI 落地页 · Skills · 先问诊再动手</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/05-topology.png" alt="拓扑 Traffic" width="100%">
+  <img src="docs/v1.5.0/06-topology.png" alt="拓扑 Traffic" width="100%">
   <p><strong>拓扑图 · Traffic 模式 RPS 流动（Service → 工作负载 → Pod）</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/06-timeline.png" alt="时间线" width="100%">
+  <img src="docs/v1.5.0/07-timeline.png" alt="时间线" width="100%">
   <p><strong>时间线 · 状态散点 + 事件流</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/04-fleet-overview.png" alt="集群总览" width="100%">
+  <img src="docs/v1.5.0/04-fleet-overview.png" alt="集群总览" width="100%">
   <p><strong>集群总览 · 多集群健康卡片</strong></p>
 </div>
 
 <details>
-<summary>更多界面（登录 · 对话 · Monitoring · Pods · 主题）</summary>
+<summary>更多界面（Chart 详情 · 节点 · Pods · Monitoring · 侧栏定制 · 登录 · 主题）</summary>
 
 <br>
 
 <div align="center">
-  <img src="docs/v1.0.1/00-login.png" alt="登录页" width="100%">
-  <p><strong>登录页 · Showcase 一键演示账号</strong></p>
+  <img src="docs/v1.5.0/03-chart-detail.png" alt="Chart 详情" width="100%">
+  <p><strong>Chart 详情 · 安装前先看 README 与默认 values</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/02-ai-skill-slash.png" alt="Skill 菜单" width="100%">
-  <p><strong>输入 <code>/</code> 弹出 Skill</strong></p>
+  <img src="docs/v1.5.0/05-nodes.png" alt="节点" width="100%">
+  <p><strong>节点 · 列表里直接 cordon / drain / 改污点</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/03-ai-chat-clues.png" alt="AI 对话与资源线索" width="100%">
-  <p><strong>AI 对话 · 资源线索进控制台</strong></p>
+  <img src="docs/v1.5.0/09-pods.png" alt="Pods 列表" width="100%">
+  <p><strong>Pods · CPU/MEM 对 requests 与 limits 的占比</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/07-monitoring.png" alt="Monitoring" width="100%">
+  <img src="docs/v1.5.0/08-monitoring.png" alt="Monitoring" width="100%">
   <p><strong>Monitoring · Showcase Prometheus 时序</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/08-pods-investigate.png" alt="Pods 列表" width="100%">
-  <p><strong>Pods 列表 ·「用 AI 调查」</strong></p>
+  <img src="docs/v1.5.0/10-nav-customizer.png" alt="侧栏定制" width="100%">
+  <p><strong>侧栏定制 · 每个用户自己排序或隐藏菜单</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/09-pod-detail.png" alt="Pod 详情" width="100%">
-  <p><strong>Pod 详情</strong></p>
+  <img src="docs/v1.5.0/00-login.png" alt="登录页" width="100%">
+  <p><strong>登录页 · Showcase 一键演示账号</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/10-themes-overview-collage.png" alt="八套主题" width="100%">
-  <p><strong>八套主题概览</strong></p>
+  <img src="docs/v1.5.0/11-themes-collage.png" alt="十套主题" width="100%">
+  <p><strong>十套主题概览</strong></p>
 </div>
 
 </details>
 
 ## ✨ 核心优势
 
-1. **先问诊，再深潜**: 登录先进 AI，控制台在顶栏；资源页与舰队卡都能把上下文扔回调查员
+1. **先问诊，再深潜**: 登录先进 AI，控制台与应用市场在顶栏一键可达；资源页与舰队卡都能把上下文扔回调查员
 2. **先看路径，再看历史**: Topology（Traffic）看 Service → 工作负载 → Pod 流量；Timeline 看状态色带与事件
 3. **只读边界清晰**: 默认 Agent 是集群调查员；写操作、审批、备份仍走控制台与既有流程
 4. **浏览器 + 桌面**: 同一套界面；桌面双击连本机 kubeconfig，不必先搭 Web
@@ -197,18 +205,21 @@ v1.0 在资源控制台之上，补了一层更接近真实排障顺序的入口
 ## ✨ 现有功能
 
 - **AI 工作台**: 登录首页、SSE 对话、只读工具、Skill（含 `/` 与自定义）、资源页「用 AI 调查」、会话历史、一键进控制台
+- **应用市场**: Helm Chart 目录与搜索、仓库管理、Chart README 与默认 values、安装与升级、已安装 Release 的回滚与卸载
 - **集群总览**: 多集群健康卡片、环境标签、单卡 AI 巡检 / 舰队巡检
 - **认证与权限**: JWT 登录、GitHub OAuth（可选）、Casbin RBAC；用户 / 角色 / 系统设置；安全审计
+- **导航**: 管理员按角色控制侧栏可见性、用户自行排序与隐藏、上下文栏按路由作用域显隐
 - **多集群**: 集群导入与切换、本地 kubeconfig 上下文导入
 - **概览与检索**: 全局资源搜索、Events 事件流
 - **集群资源**:
-  - Nodes / Namespaces / CRDs
-  - Workloads：Pods（日志 / Web 终端）、Deployments、StatefulSets、DaemonSets、Jobs、CronJobs、HPA、PDB
-  - Network：Services、Ingress、GatewayClasses、Gateways、HTTPRoutes、NetworkPolicies
-  - Config：ConfigMaps、Secrets、ServiceAccounts、ResourceQuotas、LimitRanges
-  - Storage：PV / PVC / StorageClass
+  - Nodes（cordon / uncordon / drain、污点与标签）/ Namespaces / CRDs
+  - Workloads：Pods（日志 / Web 终端）、Deployments、StatefulSets、DaemonSets、ReplicaSets、ReplicationControllers、PodTemplates、Jobs、CronJobs、HPA、PDB
+  - Network：Services、Endpoints、EndpointSlices、Ingress、IngressClasses、ServiceCIDRs、GatewayClasses、Gateways、HTTPRoutes、NetworkPolicies
+  - Config：ConfigMaps、Secrets、ServiceAccounts、ResourceQuotas、LimitRanges、Mutating / ValidatingWebhooks
+  - Storage：PV / PVC / StorageClass、VolumeAttachments、CSIDrivers、CSINodes
+  - Scheduling：PriorityClasses、RuntimeClasses、Leases
   - Access：Roles、RoleBindings、ClusterRoles、ClusterRoleBindings
-- **可观测与运维**: Monitoring（Prometheus）、Helm Release、API Proxy、资源 YAML 查看 / 编辑
+- **可观测与运维**: Monitoring（Prometheus）、Topology、Timeline、审计、API Proxy、资源 YAML 查看 / 编辑
 - **多主题 / 中文界面**
 
 ## 🖥️ 桌面版（Windows / macOS / Linux）

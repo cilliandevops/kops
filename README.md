@@ -53,10 +53,13 @@ Ask “how is it now / what’s broken,” follow resource clues into detail, lo
 
 ### v1.5.0 (current)
 
+- **Marketplace**: a Helm chart catalog you can search, read (chart README and default values), and install from — promoted to a three-way top switcher (AI / Console / Marketplace) rather than buried in the console; repositories and installed releases are managed in the same place
 - **Resource coverage**: 15 more kinds — ReplicaSets, ReplicationControllers, PodTemplates, Endpoints, EndpointSlices, IngressClasses, ServiceCIDRs, PriorityClasses, RuntimeClasses, Leases, Mutating/ValidatingWebhooks, VolumeAttachments, CSIDrivers, CSINodes
 - **Node operations**: cordon / uncordon / drain with eviction progress, taint and label editing
 - **Environments / Applications**: app-group surfaces and access-scope management
-- **UI overhaul**: neutral gray-white default theme, reworked typography and spacing, denser tables; the eight accent themes stay available
+- **Configurable navigation**: admins hide sidebar groups per role (a blocklist, so new features stay visible by default); each user can then reorder or hide what remains in their own browser
+- **Scoped context bar**: cluster and namespace pickers left the crowded topbar and now appear only on routes that are actually scoped
+- **UI overhaul**: reworked typography and spacing, denser tables, and two neutral themes (graphite, carbon) joining the existing eight
 - **Login**: redesigned lattice / particle field that reacts to the page layout
 - Fonts simplified to browser default + Maple Mono (`Maple Mono CN` applies one face to every surface)
 - License moved to AGPL-3.0-only
@@ -80,70 +83,75 @@ Highlights vs earlier releases:
 - **Themes**: tron / paper / matrix / amber / nord / sakura / midnight-violet / solarized
 
 <div align="center">
-  <img src="docs/v1.0.1/01-ai-landing.png" alt="AI landing" width="100%">
+  <img src="docs/v1.5.0/02-marketplace.png" alt="Marketplace" width="100%">
+  <p><strong>Marketplace · Helm chart catalog behind the AI / Console / Marketplace switcher</strong></p>
+</div>
+
+<div align="center">
+  <img src="docs/v1.5.0/01-ai-landing.png" alt="AI landing" width="100%">
   <p><strong>AI landing · Skills · Ask first then change</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/05-topology.png" alt="Topology Traffic" width="100%">
+  <img src="docs/v1.5.0/06-topology.png" alt="Topology Traffic" width="100%">
   <p><strong>Topology · Traffic mode with RPS flow (Service → Workload → Pod)</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/06-timeline.png" alt="Timeline" width="100%">
+  <img src="docs/v1.5.0/07-timeline.png" alt="Timeline" width="100%">
   <p><strong>Timeline · status scatter + event stream</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/04-fleet-overview.png" alt="Fleet overview" width="100%">
+  <img src="docs/v1.5.0/04-fleet-overview.png" alt="Fleet overview" width="100%">
   <p><strong>Fleet · multi-cluster health cards</strong></p>
 </div>
 
 <details>
-<summary>More screenshots (login · chat · monitoring · pods · themes)</summary>
+<summary>More screenshots (chart detail · nodes · pods · monitoring · sidebar · login · themes)</summary>
 
 <br>
 
 <div align="center">
-  <img src="docs/v1.0.1/00-login.png" alt="Login" width="100%">
-  <p><strong>Login · Showcase one-click demo accounts</strong></p>
+  <img src="docs/v1.5.0/03-chart-detail.png" alt="Chart detail" width="100%">
+  <p><strong>Chart detail · README and default values before installing</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/02-ai-skill-slash.png" alt="Skill menu" width="100%">
-  <p><strong>Type <code>/</code> for Skills</strong></p>
+  <img src="docs/v1.5.0/05-nodes.png" alt="Nodes" width="100%">
+  <p><strong>Nodes · cordon / drain / taint from the list</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/03-ai-chat-clues.png" alt="AI chat with resource clues" width="100%">
-  <p><strong>AI chat · resource clues into the console</strong></p>
+  <img src="docs/v1.5.0/09-pods.png" alt="Pods list" width="100%">
+  <p><strong>Pods · CPU/MEM against requests and limits</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/07-monitoring.png" alt="Monitoring" width="100%">
+  <img src="docs/v1.5.0/08-monitoring.png" alt="Monitoring" width="100%">
   <p><strong>Monitoring · Showcase Prometheus series</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/08-pods-investigate.png" alt="Pods list" width="100%">
-  <p><strong>Pods list · Investigate with AI</strong></p>
+  <img src="docs/v1.5.0/10-nav-customizer.png" alt="Customize sidebar" width="100%">
+  <p><strong>Customize sidebar · reorder or hide menus per user</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/09-pod-detail.png" alt="Pod detail" width="100%">
-  <p><strong>Pod detail</strong></p>
+  <img src="docs/v1.5.0/00-login.png" alt="Login" width="100%">
+  <p><strong>Login · Showcase one-click demo accounts</strong></p>
 </div>
 
 <div align="center">
-  <img src="docs/v1.0.1/10-themes-overview-collage.png" alt="Eight themes" width="100%">
-  <p><strong>Eight themes</strong></p>
+  <img src="docs/v1.5.0/11-themes-collage.png" alt="Ten themes" width="100%">
+  <p><strong>Ten themes</strong></p>
 </div>
 
 </details>
 
 ## ✨ Key Differentiators
 
-1. **Triage first, deep dive second**: land on AI after login; console in the top bar; resource pages and fleet cards can throw context back to the investigator
+1. **Triage first, deep dive second**: land on AI after login, with Console and Marketplace one click away in the top bar; resource pages and fleet cards can throw context back to the investigator
 2. **See the path, then the history**: Topology (Traffic) for Service → Workload → Pod flow; Timeline for status segments and event markers
 3. **Clear read-only boundary**: default agent is the cluster investigator; writes, approvals, and backups still go through the console and your existing process
 4. **Browser + desktop**: same UI; desktop reads local kubeconfig without standing up a web stack first
@@ -197,18 +205,21 @@ v1.0 adds an entry that matches how people troubleshoot — ask first, then chan
 ## ✨ Current Features
 
 - **AI workspace**: home after login, SSE chat, read-only tools, Skills (`/` + custom), Investigate-with-AI, session history, jump into console
+- **Marketplace**: Helm chart catalog with search and repository management, chart README / default values, install and upgrade, installed releases with rollback and uninstall
 - **Fleet overview**: multi-cluster health cards, env tags, per-card / fleet AI inspect
 - **Auth & RBAC**: JWT login, optional GitHub OAuth, Casbin roles; user / role / settings admin; security audit log
+- **Navigation**: per-role sidebar visibility for admins, per-user reordering and hiding, context bar scoped to the route
 - **Multi-cluster**: import and switch clusters, local kubeconfig context import
 - **Overview & search**: global resource search, Events stream
 - **Cluster resources**:
-  - Nodes / Namespaces / CRDs
-  - Workloads: Pods (logs / web terminal), Deployments, StatefulSets, DaemonSets, Jobs, CronJobs, HPA, PDB
-  - Network: Services, Ingress, GatewayClasses, Gateways, HTTPRoutes, NetworkPolicies
-  - Config: ConfigMaps, Secrets, ServiceAccounts, ResourceQuotas, LimitRanges
-  - Storage: PV / PVC / StorageClass
+  - Nodes (cordon / uncordon / drain, taints and labels) / Namespaces / CRDs
+  - Workloads: Pods (logs / web terminal), Deployments, StatefulSets, DaemonSets, ReplicaSets, ReplicationControllers, PodTemplates, Jobs, CronJobs, HPA, PDB
+  - Network: Services, Endpoints, EndpointSlices, Ingress, IngressClasses, ServiceCIDRs, GatewayClasses, Gateways, HTTPRoutes, NetworkPolicies
+  - Config: ConfigMaps, Secrets, ServiceAccounts, ResourceQuotas, LimitRanges, Mutating / ValidatingWebhooks
+  - Storage: PV / PVC / StorageClass, VolumeAttachments, CSIDrivers, CSINodes
+  - Scheduling: PriorityClasses, RuntimeClasses, Leases
   - Access: Roles, RoleBindings, ClusterRoles, ClusterRoleBindings
-- **Observe & ops**: Monitoring (Prometheus), Helm releases, API Proxy, resource YAML view / edit
+- **Observe & ops**: Monitoring (Prometheus), Topology, Timeline, Audit, API Proxy, resource YAML view / edit
 - **Themes / Chinese UI**
 
 ## 🖥️ Desktop (Windows / macOS / Linux)
